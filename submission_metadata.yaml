@@ -13,7 +13,10 @@ primary_contact:
 team_members:
   - name: "Abhishek Gupta"
     email: "abhishekg8318@gmail.com"
-    role: "AI Engineer"
+    role: "Team Leader"
+  - name: "Sakshi Singh"
+    email: "sakshikajal14@gmail.com"
+    role: "Backend Developer"
 
 # ============================================================================
 # Code and reproducibility
