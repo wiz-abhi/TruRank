@@ -91,7 +91,7 @@ python rank.py
 ### 4. Run the UI Demo (Bonus)
 
 ```bash
-python -m streamlit run app/demo.py
+python -m streamlit run app/demo.py --server.fileWatcherType none
 ```
 *A beautiful interactive dashboard to visualize the Top 15 sample candidates, their semantic match, signal breakdown, and human-readable reasoning.*
 
