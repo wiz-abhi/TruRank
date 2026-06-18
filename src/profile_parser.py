@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+import pandas as pd
+
 from src.utils import clamp, get_logger, load_config, safe_float
 
 logger = get_logger(__name__)
@@ -71,57 +73,96 @@ class ProfileParser:
 
     # ── public API ───────────────────────────────────────────────────
     def parse(self, raw: Dict[str, Any], idx: int = 0) -> CandidateProfile:
-        """Parse one raw candidate record matching the JSON schema."""
+        """Parse one raw candidate record matching the JSON schema or flat CSV."""
         candidate_id = raw.get("candidate_id", f"CAND_{idx:07d}")
 
-        # Profile block
-        profile_block = raw.get("profile", {})
-        name = profile_block.get("anonymized_name", f"Candidate-{candidate_id}")
+        # Profile block (nested JSON vs flat CSV)
+        profile_block = raw.get("profile")
+        if isinstance(profile_block, str):
+            # It's a flat CSV but happened to have 'profile' string, ignore it for parsing fields
+            profile_block = {}
+        elif not profile_block:
+            profile_block = raw
+
+        name = profile_block.get("anonymized_name") or raw.get("name") or f"Candidate-{candidate_id}"
         headline = profile_block.get("headline", "")
         summary = profile_block.get("summary", "")
-        experience_years = safe_float(profile_block.get("years_of_experience", 0))
-        location = profile_block.get("location", "")
+        exp_val = profile_block.get("years_of_experience") or raw.get("experience_years") or 0
+        experience_years = safe_float(exp_val)
+        location = profile_block.get("location") or raw.get("location") or ""
 
         # Career block
         career_history = raw.get("career_history", [])
         job_titles = []
         companies = []
         career_history_desc = []
-        for role in career_history:
-            title = role.get("title", "")
-            if title:
-                job_titles.append(title)
-            comp = role.get("company", "")
-            if comp:
-                companies.append(comp)
-            desc = role.get("description", "")
-            if desc:
-                career_history_desc.append(desc)
+        
+        if isinstance(career_history, str):
+            # Flat CSV: job_titles, companies as comma separated strings
+            titles_str = raw.get("job_titles", "")
+            if pd.notna(titles_str) and titles_str:
+                job_titles = [t.strip() for t in str(titles_str).split(",")]
+            comps_str = raw.get("companies", "")
+            if pd.notna(comps_str) and comps_str:
+                companies = [c.strip() for c in str(comps_str).split(",")]
+        elif isinstance(career_history, list):
+            # Nested JSON
+            for role in career_history:
+                if isinstance(role, dict):
+                    title = role.get("title", "")
+                    if title:
+                        job_titles.append(title)
+                    comp = role.get("company", "")
+                    if comp:
+                        companies.append(comp)
+                    desc = role.get("description", "")
+                    if desc:
+                        career_history_desc.append(desc)
 
         # Education block
-        education_list = raw.get("education", [])
+        education_val = raw.get("education", [])
         education_tier = "tier_3"  # default
         education_str = ""
-        if education_list:
-            edu = education_list[0]
-            education_str = f"{edu.get('degree', '')} in {edu.get('field_of_study', '')} from {edu.get('institution', '')}"
-            education_tier = edu.get("tier", "tier_3")
+        
+        if isinstance(education_val, str):
+            # Flat CSV
+            education_str = education_val
+        elif isinstance(education_val, list) and education_val:
+            # Nested JSON
+            edu = education_val[0]
+            if isinstance(edu, dict):
+                education_str = f"{edu.get('degree', '')} in {edu.get('field_of_study', '')} from {edu.get('institution', '')}"
+                education_tier = edu.get("tier", "tier_3")
 
         # Skills block
-        skills_block = raw.get("skills", [])
+        skills_val = raw.get("skills", [])
         skills = []
         skill_recency: Dict[str, int] = {}
         current_year = datetime.now().year
-        for sk in skills_block:
-            skill_name = sk.get("name")
-            if skill_name:
-                skills.append(skill_name)
-                # Roughly estimate recency based on duration (very crude but functional)
-                skill_recency[skill_name] = current_year
+        
+        if isinstance(skills_val, str):
+            # Flat CSV
+            if pd.notna(skills_val) and skills_val:
+                skills = [s.strip() for s in skills_val.split(",")]
+                for sk in skills:
+                    skill_recency[sk] = current_year
+        elif isinstance(skills_val, list):
+            # Nested JSON
+            for sk in skills_val:
+                if isinstance(sk, dict):
+                    skill_name = sk.get("name")
+                    if skill_name:
+                        skills.append(skill_name)
+                        skill_recency[skill_name] = current_year
 
         # Signals
         redrob_signals = raw.get("redrob_signals", {})
-        last_active = self._parse_date(redrob_signals.get("last_active_date"))
+        if isinstance(redrob_signals, str):
+            redrob_signals = {}
+            
+        # Get last active date either from redrob signals or flat CSV root
+        last_active_raw = redrob_signals.get("last_active_date") or raw.get("last_active")
+        last_active = self._parse_date(last_active_raw)
 
         num_roles = max(len(job_titles), 1)
         career_velocity = (
