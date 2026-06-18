@@ -1,0 +1,67 @@
+# Redrob Hackathon — Submission Metadata Template
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "IndiaRanks"
+
+primary_contact:
+  name: "Abhishek"
+  email: "abhishek@example.com"
+  phone: "+91-0000000000"
+
+team_members:
+  - name: "Abhishek"
+    email: "abhishek@example.com"
+    role: "AI Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/abhis/indiaruns"
+sandbox_link: "https://github.com/abhis/indiaruns"
+
+reproduce_command: "python rank.py"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Windows PC"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.11"
+  os: "Windows 11"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: true
+  pre_computation_time_minutes: 45
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Gemini"
+
+ai_usage_summary: |
+  Used DeepMind's Antigravity (Gemini) for coding, structuring the repository,
+  writing explainability heuristics, and optimizing the pipeline to meet CPU limits.
+
+# ============================================================================
+# Approach summary (optional but recommended)
+# ============================================================================
+methodology_summary: |
+  A two-step pipeline. We pre-compute all semantic embeddings using sentence-transformers (all-MiniLM-L6-v2) 
+  to bypass CPU runtime constraints. Then, rank.py scores candidates against a hackathon-specific target JD 
+  using vector similarity, and heavily modifies the score using Redrob behavioral signals (response rate, 
+  activity recency). Tie breaks are handled, and a template engine generates plain-language reasoning.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true

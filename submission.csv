@@ -1,0 +1,101 @@
+candidate_id,rank,score,reasoning
+CAND_0030784,1,0.8984,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0099806,2,0.8636,Moderate semantic match (52%) with 4.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0015582,3,0.8508,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0002025,4,0.8477,Low semantic match (50%) but has 5.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0011162,5,0.8449,Moderate semantic match (57%) with 5.8 years of experience. Highly active and responsive candidate.
+CAND_0083790,6,0.8376,Moderate semantic match (50%) with 3.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0017960,7,0.8334,Moderate semantic match (55%) with 7.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0077337,8,0.8320,Low semantic match (47%) but has 7.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0004402,9,0.8242,Moderate semantic match (55%) with 6.0 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0093401,10,0.8221,Moderate semantic match (53%) with 6.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0062247,11,0.8170,Moderate semantic match (50%) with 7.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0046353,12,0.8148,Moderate semantic match (52%) with 6.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0015065,13,0.8141,Moderate semantic match (54%) with 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0012805,14,0.8137,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0079387,15,0.8133,Moderate semantic match (52%) with 6.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0016659,16,0.8113,Moderate semantic match (54%) with 4.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0026716,17,0.8102,Low semantic match (48%) but has 5.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0039838,18,0.8079,Moderate semantic match (55%) with 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0041669,19,0.8050,Moderate semantic match (54%) with 8.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0081846,20,0.8034,Low semantic match (44%) but has 6.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0099347,21,0.8033,Low semantic match (47%) but has 3.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0054318,22,0.8016,Moderate semantic match (52%) with 3.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0063622,23,0.7911,Low semantic match (47%) but has 5.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0093763,24,0.7896,Moderate semantic match (51%) with 5.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0073007,25,0.7890,Moderate semantic match (57%) with 5.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0018499,26,0.7882,Low semantic match (48%) but has 7.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0070514,27,0.7860,Moderate semantic match (51%) with 5.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0047521,28,0.7835,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0002120,29,0.7819,Moderate semantic match (55%) with 6.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0080465,30,0.7817,Moderate semantic match (53%) with 4.2 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0065195,31,0.7790,Moderate semantic match (51%) with 5.1 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0078002,32,0.7788,Low semantic match (50%) but has 6.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0010149,33,0.7770,Low semantic match (43%) but has 6.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0041918,34,0.7754,Low semantic match (49%) but has 5.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0086893,35,0.7751,Low semantic match (49%) but has 3.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0040887,36,0.7728,Low semantic match (47%) but has 4.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0077067,37,0.7709,Low semantic match (49%) but has 5.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0013314,38,0.7694,Low semantic match (47%) but has 3.6 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0033352,39,0.7691,Moderate semantic match (54%) with 5.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0018549,40,0.7690,Moderate semantic match (52%) with 6.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0050876,41,0.7681,Moderate semantic match (52%) with 6.0 years of experience. Tier-1 educational background.
+CAND_0046064,42,0.7654,Low semantic match (49%) but has 8.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0065786,43,0.7652,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0059017,44,0.7637,Moderate semantic match (54%) with 6.8 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0034164,45,0.7622,Low semantic match (50%) but has 3.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0000031,46,0.7621,Moderate semantic match (55%) with 6.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0034177,47,0.7615,Low semantic match (43%) but has 3.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0096823,48,0.7609,Moderate semantic match (51%) with 4.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0055960,49,0.7603,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0096142,50,0.7591,Low semantic match (48%) but has 5.0 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0050860,51,0.7582,Low semantic match (47%) but has 3.9 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0037160,52,0.7575,Moderate semantic match (55%) with 6.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0081053,53,0.7569,Moderate semantic match (54%) with 5.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0035879,54,0.7568,Moderate semantic match (53%) with 4.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0092255,55,0.7537,Moderate semantic match (50%) with 5.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0040946,56,0.7520,Moderate semantic match (52%) with 6.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0074342,57,0.7499,Low semantic match (47%) but has 5.7 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0075574,58,0.7491,Moderate semantic match (53%) with 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0057701,59,0.7490,Moderate semantic match (56%) with 4.1 years of experience. Tier-1 educational background.
+CAND_0044222,60,0.7480,Moderate semantic match (53%) with 7.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0096209,61,0.7461,Moderate semantic match (52%) with 4.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0054829,62,0.7457,Low semantic match (48%) but has 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0099675,63,0.7454,Low semantic match (43%) but has 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0030468,64,0.7451,Low semantic match (44%) but has 5.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0046132,65,0.7450,Low semantic match (47%) but has 4.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0008239,66,0.7448,Low semantic match (49%) but has 4.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0092706,67,0.7448,Moderate semantic match (54%) with 5.8 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0088025,68,0.7447,Low semantic match (49%) but has 8.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0001218,69,0.7430,Moderate semantic match (56%) with 6.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0006418,70,0.7429,Low semantic match (48%) but has 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0081321,71,0.7427,Low semantic match (47%) but has 5.3 years of experience. Tier-1 educational background.
+CAND_0061265,72,0.7396,Moderate semantic match (54%) with 6.6 years of experience. Tier-1 educational background.
+CAND_0011687,73,0.7392,Low semantic match (49%) but has 7.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0079550,74,0.7379,Low semantic match (48%) but has 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0036184,75,0.7378,Moderate semantic match (51%) with 6.0 years of experience. Highly active and responsive candidate.
+CAND_0003841,76,0.7374,Low semantic match (50%) but has 5.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0044213,77,0.7370,Low semantic match (48%) but has 3.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0047542,78,0.7353,Moderate semantic match (54%) with 5.0 years of experience.
+CAND_0015578,79,0.7348,Moderate semantic match (54%) with 5.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0015057,80,0.7339,Moderate semantic match (52%) with 4.6 years of experience. Highly active and responsive candidate.
+CAND_0057736,81,0.7339,Moderate semantic match (50%) with 6.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0063585,82,0.7328,Moderate semantic match (53%) with 3.1 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0064888,83,0.7328,Low semantic match (46%) but has 5.8 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0069905,84,0.7326,Moderate semantic match (52%) with 6.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0073204,85,0.7319,Low semantic match (47%) but has 3.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0099965,86,0.7319,Moderate semantic match (50%) with 4.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0025640,87,0.7317,Moderate semantic match (53%) with 5.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0031982,88,0.7317,Low semantic match (47%) but has 3.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0063736,89,0.7311,Low semantic match (47%) but has 3.7 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0020708,90,0.7309,Moderate semantic match (54%) with 4.2 years of experience. Background aligns well with data science and startup domains.
+CAND_0006567,91,0.7303,Low semantic match (46%) but has 7.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0080315,92,0.7290,Moderate semantic match (53%) with 4.1 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0051004,93,0.7259,Low semantic match (50%) but has 4.7 years of experience. Tier-1 educational background.
+CAND_0068513,94,0.7247,Low semantic match (50%) but has 4.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0023587,95,0.7238,Low semantic match (48%) but has 3.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
+CAND_0067866,96,0.7236,Moderate semantic match (52%) with 6.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0065430,97,0.7233,Moderate semantic match (50%) with 4.4 years of experience. Highly active and responsive candidate.
+CAND_0032807,98,0.7211,Low semantic match (50%) but has 4.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
+CAND_0029117,99,0.7207,Low semantic match (46%) but has 5.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
+CAND_0053591,100,0.7202,Moderate semantic match (52%) with 5.3 years of experience. Highly active and responsive candidate.

@@ -1,0 +1,305 @@
+# =============================================================================
+# India Runs — Intelligent Candidate Ranking System
+# Configuration file
+# =============================================================================
+
+# --- Embedding model ---
+embedding:
+  model_name: "all-MiniLM-L6-v2"            # fast & lightweight; swap to "BAAI/bge-large-en-v1.5" for quality
+  cache_dir: "embeddings_cache"
+  batch_size: 64
+  normalize: true
+
+# --- Target JD Profile (Hardcoded for Hackathon) ---
+target_jd:
+  required_skills:
+    - "embeddings"
+    - "sentence-transformers"
+    - "vector database"
+    - "pinecone"
+    - "weaviate"
+    - "qdrant"
+    - "milvus"
+    - "faiss"
+    - "python"
+    - "ndcg"
+    - "mrr"
+    - "map"
+    - "evaluation"
+  preferred_skills:
+    - "lora"
+    - "qlora"
+    - "peft"
+    - "xgboost"
+    - "learning-to-rank"
+  min_experience: 4
+  max_experience: 8
+  domain: "data_science"
+  culture_signals: ["startup mindset"]
+  location_preferred:
+    - "pune"
+    - "noida"
+
+# --- Signal weights ---
+# 1. Base Score (Max ~1.0 + education bonus)
+weights:
+  semantic_similarity: 0.35
+  skill_match: 0.25
+  experience_fit: 0.15
+  domain_alignment: 0.10
+  culture_fit: 0.10
+  skill_recency: 0.05
+  career_velocity: 0.00  # Will not use career velocity to save compute
+
+# 2. Redrob Behavioral Multipliers (Max ~1.0)
+behavioral:
+  base_multiplier: 1.0
+  active_within_60d_bonus: 0.10
+  stale_penalty_180d: -0.30
+  stale_penalty_365d: -0.60
+  response_rate_weight: 0.40  # e.g., rate of 0.10 => high penalty
+  low_response_penalty_threshold: 0.20
+  high_response_bonus_threshold: 0.70
+
+# --- Education tier bonuses (additive, not multiplied) ---
+education_tiers:
+  tier_1:
+    bonus: 0.15
+    keywords:
+      - "IIT"
+      - "IIM"
+      - "BITS"
+      - "BITS Pilani"
+      - "NIT"
+      - "ISI"
+      - "ISB"
+      - "IISC"
+      - "Indian Institute of Technology"
+      - "Indian Institute of Management"
+      - "Indian Statistical Institute"
+      - "Indian Institute of Science"
+      - "XLRI"
+      - "FMS Delhi"
+      - "JBIMS"
+      - "MDI Gurgaon"
+      - "Delhi School of Economics"
+  tier_2:
+    bonus: 0.08
+    keywords:
+      - "VIT"
+      - "SRM"
+      - "Manipal"
+      - "IIIT"
+      - "DTU"
+      - "NSIT"
+      - "COEP"
+      - "Jadavpur"
+      - "Thapar"
+      - "Anna University"
+      - "PSG Tech"
+      - "BIT Mesra"
+      - "LNMIIT"
+      - "PEC Chandigarh"
+      - "RVCE"
+      - "PESIT"
+  tier_3:
+    bonus: 0.0
+
+# --- Experience scoring ---
+experience:
+  exact_match_score: 1.0
+  within_1_year_score: 0.9
+  overqualified_score: 0.8
+  underqualified_penalty_per_year: 0.1   # deducted per year of gap
+
+# --- Career velocity optimal range ---
+career_velocity:
+  optimal_min: 0.25      # role changes per year
+  optimal_max: 0.55
+  job_hopper_threshold: 0.8
+
+# --- Profile freshness decay ---
+freshness:
+  active_3_months: 1.0
+  active_1_year: 0.7
+  active_2_plus_years: 0.3
+  stale_days_threshold: 730    # 2 years
+
+# --- Skill recency ---
+skill_recency:
+  stale_threshold_years: 3
+  decay_factor: 0.15            # penalty per year beyond threshold
+
+# --- Culture fit ---
+culture:
+  startup_companies:
+    - "Razorpay"
+    - "Zerodha"
+    - "CRED"
+    - "Meesho"
+    - "Groww"
+    - "PhonePe"
+    - "Slice"
+    - "Jupiter"
+    - "Jar"
+    - "Fi Money"
+    - "Licious"
+    - "Nykaa"
+    - "Swiggy"
+    - "Zomato"
+    - "Ola"
+    - "Flipkart"
+    - "ShareChat"
+    - "Unacademy"
+    - "Byju's"
+    - "Dunzo"
+    - "Urban Company"
+    - "CarDekho"
+    - "Delhivery"
+    - "Udaan"
+    - "Dream11"
+    - "upGrad"
+    - "Rapido"
+    - "NoBroker"
+    - "MobiKwik"
+    - "Paytm"
+    - "PolicyBazaar"
+    - "InMobi"
+    - "BigBasket"
+    - "BlinkIt"
+    - "Zoho"
+    - "Freshworks"
+    - "Postman"
+    - "BrowserStack"
+    - "Chargebee"
+    - "Hasura"
+    - "CleverTap"
+    - "Darwinbox"
+    - "Leena AI"
+    - "Yellow.ai"
+    - "Haptik"
+    - "Zetwerk"
+    - "Lenskart"
+    - "BoAt"
+    - "Mamaearth"
+  enterprise_companies:
+    - "TCS"
+    - "Infosys"
+    - "Wipro"
+    - "HCL Technologies"
+    - "Tech Mahindra"
+    - "LTIMindtree"
+    - "Cognizant"
+    - "Mphasis"
+    - "Persistent Systems"
+    - "Reliance"
+    - "L&T Infotech"
+    - "Capgemini India"
+    - "Accenture India"
+    - "IBM India"
+    - "Oracle India"
+    - "SAP India"
+    - "Deloitte India"
+    - "EY India"
+    - "KPMG India"
+    - "PwC India"
+
+# --- Domain taxonomy keywords ---
+domains:
+  backend:
+    - "backend"
+    - "server"
+    - "api"
+    - "microservices"
+    - "distributed systems"
+    - "REST"
+    - "GraphQL"
+    - "database"
+    - "infrastructure"
+  frontend:
+    - "frontend"
+    - "UI"
+    - "UX"
+    - "React"
+    - "Angular"
+    - "Vue"
+    - "CSS"
+    - "JavaScript"
+    - "web development"
+  data_science:
+    - "data science"
+    - "machine learning"
+    - "deep learning"
+    - "NLP"
+    - "computer vision"
+    - "analytics"
+    - "statistics"
+    - "AI"
+    - "model"
+    - "prediction"
+  data_engineering:
+    - "data engineering"
+    - "ETL"
+    - "pipeline"
+    - "Spark"
+    - "Kafka"
+    - "Airflow"
+    - "data warehouse"
+    - "BigQuery"
+    - "Snowflake"
+  devops:
+    - "DevOps"
+    - "SRE"
+    - "CI/CD"
+    - "Kubernetes"
+    - "Docker"
+    - "AWS"
+    - "GCP"
+    - "Azure"
+    - "Terraform"
+    - "cloud"
+  mobile:
+    - "Android"
+    - "iOS"
+    - "Flutter"
+    - "React Native"
+    - "mobile"
+    - "Kotlin"
+    - "Swift"
+  product:
+    - "product management"
+    - "product manager"
+    - "PRD"
+    - "roadmap"
+    - "user research"
+    - "A/B testing"
+    - "growth"
+  security:
+    - "security"
+    - "cybersecurity"
+    - "penetration testing"
+    - "SOC"
+    - "vulnerability"
+    - "compliance"
+
+# --- Logging ---
+logging:
+  level: "INFO"
+  log_file: "pipeline.log"
+  console: true
+
+# --- Output ---
+output:
+  csv_columns:
+    - "rank"
+    - "candidate_id"
+    - "name"
+    - "match_percentage"
+    - "composite_score"
+    - "semantic_score"
+    - "skill_match_score"
+    - "experience_years"
+    - "top_reason_1"
+    - "top_reason_2"
+    - "top_reason_3"
+    - "flag_notes"
