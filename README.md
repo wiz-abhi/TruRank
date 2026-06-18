@@ -51,13 +51,9 @@ All weights are configurable in [`config.yaml`](config.yaml).
 
 | Component | Tool |
 |---|---|
-| Semantic embeddings | `sentence-transformers` (all-MiniLM-L6-v2 / bge-large-en-v1.5) |
-| Signal computation | Python, pandas, NumPy, scikit-learn |
-| JD parsing | Regex + keyword heuristics (LLM-optional) |
-| Demo UI | Streamlit + Plotly |
-| Output | CSV (pandas) |
-| Testing | pytest |
-| Config | YAML |
+| Semantic embeddings | `sentence-transformers` (all-MiniLM-L6-v2) |
+| Signal computation | Python, pandas, NumPy |
+| Output | CSV |
 
 ---
 
@@ -66,8 +62,8 @@ All weights are configurable in [`config.yaml`](config.yaml).
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/india-runs-track1.git
-cd india-runs-track1
+git clone https://github.com/wiz-abhi/indiaruns.git
+cd indiaruns
 
 python -m venv venv
 # Windows:
@@ -78,32 +74,19 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Run on provided dataset
+### 2. Precompute Embeddings
 
 ```bash
-python -m src.ranker \
-    --jd data/sample/jd.json \
-    --profiles data/sample/profiles.csv \
-    --output outputs/ranked_output.csv
+python precompute.py
 ```
+*This parses all JSONL candidates and saves embeddings to `data/processed/candidates_cache.pkl`.*
 
-### 3. Run the demo
+### 3. Rank and Generate Submission
 
 ```bash
-streamlit run app/demo.py
+python rank.py
 ```
-
-### 4. Run tests
-
-```bash
-pytest tests/ -v
-```
-
-### 5. Run benchmark
-
-```bash
-python benchmark.py --count 1000
-```
+*This loads the cache, compares candidates against the hackathon JD, computes Redrob signals, and outputs `submission.csv`.*
 
 ---
 
@@ -115,28 +98,21 @@ india_runs_track1/
 ├── requirements.txt
 ├── config.yaml                # All weights, thresholds, company lists
 ├── .gitignore
+├── submission_metadata.yaml   # Challenge submission metadata
 ├── data/
 │   ├── raw/                   # Original dataset files
-│   ├── processed/             # Cleaned/featurized data
-│   └── sample/                # Sample JD + 15 profiles for demo
+│   └── processed/             # Precomputed embeddings cache
 ├── src/
-│   ├── __init__.py
 │   ├── jd_parser.py           # JD understanding + feature extraction
 │   ├── profile_parser.py      # Candidate profile normalization
 │   ├── embeddings.py          # Semantic embedding pipeline
-│   ├── signals.py             # 9 behavioral + activity signal computation
-│   ├── ranker.py              # Scoring + ranking logic + CLI
+│   ├── signals.py             # Redrob behavioral + activity signal computation
 │   ├── explainer.py           # Natural language explanations per candidate
 │   └── utils.py               # Logging, config, helpers
-├── tests/
-│   └── test_signals.py        # 20+ unit tests for signal computation
-├── app/
-│   └── demo.py                # Streamlit demo with radar charts
-├── outputs/
-│   └── ranked_output.csv      # Final submission file
+├── precompute.py              # Step 1: Embedding generation
+├── rank.py                    # Step 2: Scoring + ranking logic
 ├── benchmark.py               # Performance benchmarking script
-└── docs/
-    └── architecture.md        # System architecture notes
+└── submission.csv             # Final generated output
 ```
 
 ---
