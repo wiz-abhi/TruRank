@@ -88,6 +88,13 @@ python rank.py
 ```
 *This loads the cache, compares candidates against the hackathon JD, computes Redrob signals, and outputs `submission.csv`.*
 
+### 4. Run the demo
+
+```bash
+streamlit run app/demo.py
+```
+*A beautiful interactive UI that loads `submission.csv` and visualizes the rankings and explainability reasons.*
+
 ---
 
 ## Project Structure
@@ -109,6 +116,8 @@ india_runs_track1/
 │   ├── signals.py             # Redrob behavioral + activity signal computation
 │   ├── explainer.py           # Natural language explanations per candidate
 │   └── utils.py               # Logging, config, helpers
+├── app/
+│   └── demo.py                # Streamlit dashboard for results
 ├── precompute.py              # Step 1: Embedding generation
 ├── rank.py                    # Step 2: Scoring + ranking logic
 ├── benchmark.py               # Performance benchmarking script
