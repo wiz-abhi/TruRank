@@ -10,7 +10,9 @@
 
 Traditional resume screening relies on keyword matching — "does this resume contain Python?" — which fails to capture context, career trajectory, or cultural fit. IndiaRanks replaces this with a **robust, multi-signal ranking pipeline** that combines:
 
-- **Semantic embeddings** (`sentence-transformers`) for deep language understanding
+- **Evidence-first semantic embeddings** (`sentence-transformers`) that prioritize career descriptions over self-declared skill lists
+- **Career evidence scoring** for shipped retrieval/ranking systems, production operation, evaluation practice, and product ownership
+- **Skill claim validation** using proficiency, duration, endorsements, and Redrob assessment scores
 - **Honeypot Detection** — Explicit filtering of impossible profiles (e.g., 0-month expert skills, timelines exceeding calendar dates)
 - **Behavioral signals** — 12 specific Redrob signals including notice period, GitHub score, profile completeness, interview completion rate, and responsiveness
 - **India-specific heuristics** — Penalties for services-only experience (per JD disqualifiers), and location preferences
@@ -41,13 +43,15 @@ submission.csv
 ```
 
 ### Signal Computation
-The `SignalComputer` extracts behavioral metrics into a massive composite multiplier:
+The `SignalComputer` first establishes technical relevance from career evidence, then uses behavioral metrics as a bounded availability modifier:
 - **Notice Period**: Bonus for sub-30 days, penalty for >90 days
 - **Recency**: Bonus for <60 days active, heavy penalty for >365 days
 - **Response Rate & Time**: Bonuses for fast responders (<24h) and high response rates
 - **GitHub Activity Score**: Bonus for scores >40
 - **Profile Completeness**: Penalty for <40 score
 - **Trust Metrics**: Bonuses for LinkedIn connectivity and recruiter saves, penalties for lack of verified email/phone
+- **Location & Relocation**: Pune/Noida preference, nearby Indian hubs, and willingness to relocate
+- **Profile Trust**: Penalties for contradictory claims such as expert skills with zero months of use
 - **Disqualifiers**: A severe 90% penalty is applied to candidates whose entire career history consists exclusively of enterprise consulting services (TCS, Infosys, etc.), as explicitly mandated by the actual JD.
 
 All weights and thresholds are strictly configured in [`config.yaml`](config.yaml).
@@ -87,6 +91,8 @@ pip install -r requirements.txt
 python precompute.py
 ```
 *This parses all 100K JSONL candidates and saves embeddings to `data/processed/candidates_cache.pkl`. Note: this takes about 45 minutes on a standard CPU.*
+
+Re-run this step whenever profile parsing or embedding text changes; caches are intentionally not committed.
 
 ### 3. Rank and Generate Submission
 

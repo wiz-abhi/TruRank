@@ -2,7 +2,7 @@ import argparse
 import csv
 import pickle
 import time
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -31,7 +31,9 @@ def run_ranking(cache_path: str, output_path: str):
         culture_signals=target_jd_cfg.get("culture_signals", []),
     )
     jd_embedding_text = (
-        "Skills: "
+        "Senior applied AI engineer who has shipped production retrieval, ranking, "
+        "recommendation or search systems to real users. Evidence of evaluation with "
+        "NDCG, MRR, MAP or A/B tests; strong Python and product ownership. Skills: "
         + ", ".join(jd.required_skills)
         + " Experience: "
         + str(jd.min_experience_years)
@@ -66,8 +68,7 @@ def run_ranking(cache_path: str, output_path: str):
         sim = float(semantic_scores[i])
         scores = computer.compute_all(profile, jd, sim)
         # Round to 4 decimal places so the sort order matches what validate_submission.py sees
-        rounded_score = round(scores.composite_score, 4)
-        scored_candidates.append((rounded_score, profile.candidate_id, profile, scores))
+        scored_candidates.append((scores.composite_score, profile.candidate_id, profile, scores))
 
     # Sort: Primary by score (descending), Secondary by candidate_id (ascending)
     print("Sorting candidates...")
@@ -97,6 +98,7 @@ def run_ranking(cache_path: str, output_path: str):
     explainer = ExplainerEngine()
     results = []
 
+    max_score = top_100[0][0] if top_100 else 1.0
     for rank, (score, cid, profile, scores) in enumerate(top_100, start=1):
         # Generate reasoning based on the new SignalScores structure
         reasoning = explainer.explain_rank(profile, scores, jd)
@@ -106,7 +108,7 @@ def run_ranking(cache_path: str, output_path: str):
             {
                 "candidate_id": cid,
                 "rank": rank,
-                "score": f"{score:.4f}",
+                "score": f"{score / max_score:.6f}",
                 "reasoning": reasoning,
             }
         )

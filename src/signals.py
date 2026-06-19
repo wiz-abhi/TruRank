@@ -69,6 +69,10 @@ class SignalScores:
     experience_fit: float = 0.0
     domain_alignment: float = 0.0
     culture_fit: float = 0.0
+    career_evidence: float = 0.0
+    skill_evidence: float = 0.0
+    location_fit: float = 0.0
+    profile_trust: float = 1.0
     education_tier_bonus: float = 0.0
     base_score: float = 0.0
     behavioral_multiplier: float = 1.0
@@ -83,6 +87,10 @@ class SignalScores:
             "experience_fit": round(self.experience_fit, 4),
             "domain_alignment": round(self.domain_alignment, 4),
             "culture_fit": round(self.culture_fit, 4),
+            "career_evidence": round(self.career_evidence, 4),
+            "skill_evidence": round(self.skill_evidence, 4),
+            "location_fit": round(self.location_fit, 4),
+            "profile_trust": round(self.profile_trust, 4),
             "education_tier_bonus": round(self.education_tier_bonus, 4),
             "base_score": round(self.base_score, 4),
             "behavioral_multiplier": round(self.behavioral_multiplier, 4),
@@ -122,19 +130,23 @@ class SignalComputer:
         )
         scores.domain_alignment = self.domain_alignment_score(profile, jd)
         scores.culture_fit = self.culture_fit_score(profile, jd)
+        scores.career_evidence = self.career_evidence_score(profile)
+        scores.skill_evidence = self.skill_evidence_score(profile, jd)
+        scores.location_fit = self.location_fit_score(profile)
+        scores.profile_trust = self.profile_trust_score(profile)
         scores.education_tier_bonus = self.education_tier_bonus(profile.education_tier)
 
         w = self._weights
-        base = clamp(
-            w.get("semantic_similarity", 0.35) * scores.semantic_similarity
-            + w.get("skill_match", 0.25) * scores.skill_match
-            + w.get("experience_fit", 0.15) * scores.experience_fit
-            + w.get("domain_alignment", 0.10) * scores.domain_alignment
-            + w.get("culture_fit", 0.10) * scores.culture_fit
+        base = (
+            w.get("semantic_similarity", 0.18) * scores.semantic_similarity
+            + w.get("skill_match", 0.08) * scores.skill_match
+            + w.get("skill_evidence", 0.12) * scores.skill_evidence
+            + w.get("career_evidence", 0.28) * scores.career_evidence
+            + w.get("experience_fit", 0.10) * scores.experience_fit
+            + w.get("domain_alignment", 0.08) * scores.domain_alignment
+            + w.get("culture_fit", 0.06) * scores.culture_fit
+            + w.get("location_fit", 0.05) * scores.location_fit
             + w.get("skill_recency", 0.05) * scores.skill_recency
-            + scores.education_tier_bonus,
-            lo=0.0,
-            hi=1.15,
         )
         scores.base_score = base
 
@@ -148,8 +160,11 @@ class SignalComputer:
         # Penalize if title is definitely not related to AI/ML/Data/Backend
         title_penalty = self.title_relevance_penalty(profile)
 
-        final_score = base * behav_mult * services_only_penalty * title_penalty
-        scores.composite_score = clamp(final_score, lo=0.0, hi=1.0)
+        final_score = (
+            base * behav_mult * services_only_penalty * title_penalty
+            * scores.profile_trust
+        )
+        scores.composite_score = max(0.0, final_score)
 
         return scores
 
@@ -226,7 +241,88 @@ class SignalComputer:
         if signals.get("linkedin_connected", False):
             mult += 0.05
 
-        return clamp(mult, lo=0.1, hi=1.8)
+        # Availability can re-rank technically credible candidates, but should
+        # never manufacture relevance or erase it entirely.
+        return clamp(mult, lo=0.65, hi=1.25)
+
+    def career_evidence_score(self, profile: CandidateProfile) -> float:
+        """Score JD meaning from role history rather than skill keywords."""
+        raw = profile.raw
+        roles = raw.get("career_history", [])
+        text = " ".join(
+            " ".join(str(r.get(k, "")) for k in ("title", "industry", "description"))
+            for r in roles if isinstance(r, dict)
+        ).lower()
+        current = (raw.get("profile", {}).get("current_title", "") or "").lower()
+
+        retrieval = ["retrieval", "ranking", "search", "recommendation", "recommender", "bm25", "vector", "semantic search"]
+        production = ["production", "deployed", "shipped", "real-time", "scale", "latency", "users", "pipeline", "monitoring"]
+        evaluation = ["ndcg", "mrr", "map", "a/b", "offline evaluation", "benchmark", "experiment"]
+        ownership = ["owned", "led", "designed", "architected", "mentored", "cross-functional", "product"]
+
+        def coverage(words: List[str], cap: int) -> float:
+            return min(1.0, sum(word in text for word in words) / cap)
+
+        score = (
+            0.38 * coverage(retrieval, 3)
+            + 0.27 * coverage(production, 3)
+            + 0.20 * coverage(evaluation, 2)
+            + 0.15 * coverage(ownership, 2)
+        )
+        relevant_title = any(x in current for x in ("machine learning", "ml", "ai", "nlp", "search", "recommend", "data scientist", "applied scientist"))
+        if relevant_title:
+            score += 0.1
+        research_only = roles and all(
+            any(x in str(r.get("title", "")).lower() for x in ("researcher", "research scientist", "phd"))
+            for r in roles if isinstance(r, dict)
+        ) and not any(x in text for x in production)
+        if research_only:
+            score *= 0.25
+        primary_mismatch = any(x in current for x in ("computer vision", "speech", "robotics")) and not coverage(retrieval, 2)
+        if primary_mismatch:
+            score *= 0.45
+        return clamp(score)
+
+    def skill_evidence_score(self, profile: CandidateProfile, jd: JobDescription) -> float:
+        """Validate claimed skills using duration, proficiency and assessments."""
+        required = {_canonicalize_skill(s) for s in jd.required_skills}
+        assessments = {
+            _canonicalize_skill(k): float(v)
+            for k, v in profile.redrob_signals.get("skill_assessment_scores", {}).items()
+        }
+        evidence = []
+        proficiency = {"beginner": 0.2, "intermediate": 0.5, "advanced": 0.8, "expert": 1.0}
+        for skill in profile.raw.get("skills", []):
+            if not isinstance(skill, dict):
+                continue
+            name = _canonicalize_skill(str(skill.get("name", "")))
+            if name not in required:
+                continue
+            duration = min(1.0, float(skill.get("duration_months", 0)) / 36.0)
+            endorsed = min(1.0, float(skill.get("endorsements", 0)) / 30.0)
+            assessed = assessments.get(name, 50.0) / 100.0
+            prof = proficiency.get(str(skill.get("proficiency", "")).lower(), 0.0)
+            evidence.append(0.4 * duration + 0.25 * prof + 0.15 * endorsed + 0.2 * assessed)
+        return sum(sorted(evidence, reverse=True)[:6]) / 6.0
+
+    def location_fit_score(self, profile: CandidateProfile) -> float:
+        location = profile.location.lower()
+        signals = profile.redrob_signals
+        if any(city in location for city in ("pune", "noida")):
+            return 1.0
+        if any(city in location for city in ("hyderabad", "mumbai", "delhi", "ncr", "gurgaon", "gurugram")):
+            return 0.8
+        if signals.get("willing_to_relocate"):
+            return 0.65
+        return 0.2 if profile.raw.get("profile", {}).get("country") == "India" else 0.0
+
+    def profile_trust_score(self, profile: CandidateProfile) -> float:
+        skills = [s for s in profile.raw.get("skills", []) if isinstance(s, dict)]
+        if not skills:
+            return 0.8
+        zero_experts = sum(s.get("proficiency") == "expert" and s.get("duration_months", 0) == 0 for s in skills)
+        trust = 1.0 - min(0.65, zero_experts * 0.12)
+        return clamp(trust, 0.25, 1.0)
 
     # ── Penalties ────────────────────────────────────────────────────
     def services_only_penalty(self, profile: CandidateProfile) -> float:
@@ -295,22 +391,18 @@ class SignalComputer:
         if not all_jd_skills:
             return 0.5
 
-        threshold = self._recency_cfg.get("stale_threshold_years", 3)
-        decay = self._recency_cfg.get("decay_factor", 0.15)
-        current_year = datetime.now().year
-
+        duration_by_skill = {
+            _canonicalize_skill(name): months
+            for name, months in profile.skill_recency.items()
+        }
         total_score = 0.0
         count = 0
         for skill in all_jd_skills:
             canon = _canonicalize_skill(skill)
             if canon in {_canonicalize_skill(s) for s in profile.skills}:
                 count += 1
-                last_year = profile.skill_recency.get(skill, current_year)
-                years_ago = current_year - last_year
-                if years_ago <= threshold:
-                    total_score += 1.0
-                else:
-                    total_score += max(0.0, 1.0 - decay * (years_ago - threshold))
+                duration = duration_by_skill.get(canon, 0)
+                total_score += min(1.0, duration / 36.0)
 
         if count == 0:
             return 0.0

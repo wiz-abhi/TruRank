@@ -94,7 +94,8 @@ class HoneypotDetector:
                 start = _parse_date(role.get("start_date"))
                 dur_months = role.get("duration_months", 0)
                 if start and dur_months > 24:
-                    months_available = (2026 - start.year) * 12 + (6 - start.month)
+                    today = date.today()
+                    months_available = (today.year - start.year) * 12 + (today.month - start.month)
                     if dur_months > months_available + 3:
                         flags.append((3, f"Role at {role.get('company', '?')}: claims {dur_months}mo but only {months_available}mo since start"))
 
@@ -115,7 +116,7 @@ class HoneypotDetector:
                 default=0,
             )
             if latest_grad >= 2020:
-                years_since_grad = 2026 - latest_grad
+                years_since_grad = date.today().year - latest_grad
                 # Truly impossible: claims more than 2x the time since graduation
                 if exp_years > years_since_grad * 2 and exp_years > 8:
                     flags.append((3, f"{exp_years}yrs exp but graduated {latest_grad} ({years_since_grad}yrs ago)"))

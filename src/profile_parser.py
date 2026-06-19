@@ -42,16 +42,17 @@ class CandidateProfile:
 
     # ── rich text for embedding ──────────────────────────────────────
     def to_embedding_text(self) -> str:
-        """Build a descriptive paragraph for semantic embedding."""
+        """Build evidence-first text for semantic embedding.
+
+        Career descriptions are deliberately placed before self-declared skills:
+        the challenge data contains keyword-stuffed skill lists, while descriptions
+        contain much stronger evidence of systems actually built and shipped.
+        """
         parts: List[str] = []
         if self.headline:
             parts.append(f"Headline: {self.headline}.")
         if self.summary:
             parts.append(f"Summary: {self.summary}")
-        if self.skills:
-            parts.append(f"Skills: {', '.join(self.skills)}.")
-        if self.experience_years:
-            parts.append(f"Experience: {self.experience_years:.1f} years.")
         if self.job_titles:
             parts.append(f"Recent roles: {', '.join(self.job_titles[:4])}.")
         if self.companies:
@@ -60,6 +61,21 @@ class CandidateProfile:
             parts.append(
                 f"Experience Details: {' '.join(self.career_history_desc[:3])}"
             )
+        if self.experience_years:
+            parts.append(f"Experience: {self.experience_years:.1f} years.")
+
+        trusted_skills = []
+        for skill in self.raw.get("skills", []):
+            if not isinstance(skill, dict) or not skill.get("name"):
+                continue
+            duration = safe_float(skill.get("duration_months"))
+            endorsements = safe_float(skill.get("endorsements"))
+            if duration >= 12 or endorsements >= 5:
+                trusted_skills.append(
+                    f"{skill['name']} ({skill.get('proficiency', 'unknown')}, {duration:.0f} months)"
+                )
+        if trusted_skills:
+            parts.append(f"Supported skills: {', '.join(trusted_skills[:20])}.")
 
         return " ".join(parts) if parts else self.name
 
@@ -153,7 +169,10 @@ class ProfileParser:
                     skill_name = sk.get("name")
                     if skill_name:
                         skills.append(skill_name)
-                        skill_recency[skill_name] = current_year
+                        duration_months = safe_float(sk.get("duration_months"))
+                        # The dataset has duration, not a last-used date. Longer use is
+                        # evidence strength, but must not be fabricated as recency.
+                        skill_recency[skill_name] = int(duration_months)
 
         # Signals
         redrob_signals = raw.get("redrob_signals", {})

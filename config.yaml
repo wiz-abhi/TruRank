@@ -55,13 +55,16 @@ target_jd:
 # --- Signal weights ---
 # 1. Base Score (Max ~1.0 + education bonus)
 weights:
-  semantic_similarity: 0.35
-  skill_match: 0.25
-  experience_fit: 0.15
-  domain_alignment: 0.10
-  culture_fit: 0.10
+  semantic_similarity: 0.18
+  skill_match: 0.08
+  skill_evidence: 0.12
+  career_evidence: 0.28
+  experience_fit: 0.10
+  domain_alignment: 0.08
+  culture_fit: 0.06
+  location_fit: 0.05
   skill_recency: 0.05
-  career_velocity: 0.00  # Will not use career velocity to save compute
+  career_velocity: 0.00
 
 # 2. Redrob Behavioral Multipliers (Max ~1.0)
 behavioral:

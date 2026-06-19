@@ -47,6 +47,17 @@ class ExplainerEngine:
         elif sem >= 0.50:
             reasons.append("Moderate semantic match to the core JD.")
 
+        if scores.career_evidence >= 0.7:
+            reasons.append("Career history shows strong production retrieval, ranking, and evaluation evidence.")
+        elif scores.career_evidence >= 0.4:
+            reasons.append("Career history contains relevant applied search or ranking evidence.")
+
+        if scores.skill_evidence >= 0.55:
+            reasons.append("Relevant skills are supported by meaningful usage duration, proficiency, or assessments.")
+
+        if scores.location_fit >= 0.8:
+            reasons.append("Location is well aligned with the Pune/Noida hiring preference.")
+
         # 4. Behavioral Signals (Redrob specific)
         behav = scores.behavioral_multiplier
         signals = profile.redrob_signals or {}
@@ -71,6 +82,9 @@ class ExplainerEngine:
 
         if behav < 0.8:
             reasons.append("Warning: Low responsiveness or stale activity.")
+
+        if scores.profile_trust < 0.7:
+            reasons.append("Warning: Some skill claims have weak or inconsistent supporting evidence.")
 
         # Combine into a single string
         return " ".join(reasons)
