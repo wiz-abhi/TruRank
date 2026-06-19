@@ -2,48 +2,55 @@
 
 ### India Runs by Redrob AI — Track 1: Data & AI Challenge
 
-> An AI-powered candidate ranking engine that goes beyond keyword filtering to deeply understand context, predict relevance, and rank candidates using 9 distinct signals — built for India's job market at scale.
+> An AI-powered candidate ranking engine that goes beyond keyword filtering to deeply understand context, predict relevance, filter out honeypot profiles, and rank candidates using a multi-signal pipeline — built for India's job market at scale.
 
 ---
 
 ## What This Builds
 
-Traditional resume screening relies on keyword matching — "does this resume contain Python?" — which fails to capture context, career trajectory, or cultural fit. IndiaRanks replaces this with a **multi-signal ranking pipeline** that combines:
+Traditional resume screening relies on keyword matching — "does this resume contain Python?" — which fails to capture context, career trajectory, or cultural fit. IndiaRanks replaces this with a **robust, multi-signal ranking pipeline** that combines:
 
-- **Semantic embeddings** (sentence-transformers) for deep language understanding
-- **India-specific heuristics** — education tier classification (IIT/NIT/BITS), startup vs enterprise culture mapping, skill synonyms common on Indian resumes
-- **Behavioral signals** — career velocity, profile freshness, skill recency
-- **Full explainability** — every candidate gets 3 human-readable reasons for their rank + flag notes for edge cases
+- **Semantic embeddings** (`sentence-transformers`) for deep language understanding
+- **Honeypot Detection** — Explicit filtering of impossible profiles (e.g., 0-month expert skills, timelines exceeding calendar dates)
+- **Behavioral signals** — 12 specific Redrob signals including notice period, GitHub score, profile completeness, interview completion rate, and responsiveness
+- **India-specific heuristics** — Penalties for services-only experience (per JD disqualifiers), and location preferences
+- **Full explainability** — Every candidate receives a dynamically generated, plain-language reasoning paragraph referencing their specific job title, company, matching skills, and behavioral traits
 
-The result: a ranked candidate list where judges (and recruiters) can instantly see **why** each candidate placed where they did, not just a score.
+The result: a heavily curated, 100-row `submission.csv` completely free of honeypots, where judges can instantly see exactly why a candidate placed where they did.
 
 ---
 
 ## Architecture
 
-```
+```text
 [precompute.py]
 Candidates (JSONL) → Parser → Embeddings (sentence-transformers) → candidates_cache.pkl
 
 [rank.py]
-JD + candidates_cache.pkl → Semantic Similarity → Signal Engine → Ranker → Explainer → submission.csv
+JD + candidates_cache.pkl 
+      ↓
+Semantic Similarity
+      ↓
+Signal Engine (12 Redrob Signals)
+      ↓
+Honeypot Detector (Filters out impossible profiles)
+      ↓
+Explainer Engine (Generates plain-language reasoning)
+      ↓
+submission.csv
 ```
 
-The system computes 9 orthogonal signals per candidate, weighted into a composite score:
+### Signal Computation
+The `SignalComputer` extracts behavioral metrics into a massive composite multiplier:
+- **Notice Period**: Bonus for sub-30 days, penalty for >90 days
+- **Recency**: Bonus for <60 days active, heavy penalty for >365 days
+- **Response Rate & Time**: Bonuses for fast responders (<24h) and high response rates
+- **GitHub Activity Score**: Bonus for scores >40
+- **Profile Completeness**: Penalty for <40 score
+- **Trust Metrics**: Bonuses for LinkedIn connectivity and recruiter saves, penalties for lack of verified email/phone
+- **Disqualifiers**: A severe 90% penalty is applied to candidates whose entire career history consists exclusively of enterprise consulting services (TCS, Infosys, etc.), as explicitly mandated by the actual JD.
 
-| # | Signal | Weight | What it captures |
-|---|--------|--------|-----------------|
-| 1 | Semantic Similarity | 0.30 | Deep language match between JD and profile |
-| 2 | Skill Match | 0.20 | Hard + soft skill overlap with synonym resolution |
-| 3 | Skill Recency | 0.10 | Penalises stale skills (>3 years unused) |
-| 4 | Career Velocity | 0.10 | Role progression rate (penalises both stagnation and hopping) |
-| 5 | Experience Fit | 0.10 | Closeness to JD's experience requirement |
-| 6 | Domain Alignment | 0.08 | Has the candidate worked in the JD's domain? |
-| 7 | Profile Freshness | 0.07 | How recently was the candidate active? |
-| 8 | Culture Fit Proxy | 0.05 | Startup vs enterprise background alignment |
-| 9 | Education Tier Bonus | +0.15 | Additive bonus for IIT/IIM/BITS/NIT (not a gate) |
-
-All weights are configurable in [`config.yaml`](config.yaml).
+All weights and thresholds are strictly configured in [`config.yaml`](config.yaml).
 
 ---
 
@@ -79,31 +86,31 @@ pip install -r requirements.txt
 ```bash
 python precompute.py
 ```
-*This parses all JSONL candidates and saves embeddings to `data/processed/candidates_cache.pkl`.*
+*This parses all 100K JSONL candidates and saves embeddings to `data/processed/candidates_cache.pkl`. Note: this takes about 45 minutes on a standard CPU.*
 
 ### 3. Rank and Generate Submission
 
 ```bash
 python rank.py
 ```
-*This loads the cache, compares candidates against the hackathon JD, computes Redrob signals, and outputs `submission.csv`.*
+*This loads the cache, compares candidates against the hackathon JD, computes all Redrob signals, runs the Honeypot Detector, generates reasoning, and outputs a 100-row `submission.csv`.*
 
 ### 4. Run the UI Demo (Bonus)
 
 ```bash
 python -m streamlit run app/demo.py --server.fileWatcherType none
 ```
-*A beautiful interactive dashboard to visualize the Top 15 sample candidates, their semantic match, signal breakdown, and human-readable reasoning.*
+*A beautiful interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, and generated reasoning.*
 
 ---
 
 ## Project Structure
 
-```
+```text
 india_runs_track1/
 ├── README.md
 ├── requirements.txt
-├── config.yaml                # All weights, thresholds, company lists
+├── config.yaml                # All weights, thresholds, JD alignment
 ├── .gitignore
 ├── submission_metadata.yaml   # Challenge submission metadata
 ├── data/
@@ -114,52 +121,32 @@ india_runs_track1/
 │   ├── profile_parser.py      # Candidate profile normalization
 │   ├── embeddings.py          # Semantic embedding pipeline
 │   ├── signals.py             # Redrob behavioral + activity signal computation
+│   ├── honeypot_detector.py   # Explicit trap detection logic
 │   ├── explainer.py           # Natural language explanations per candidate
 │   └── utils.py               # Logging, config, helpers
 ├── precompute.py              # Step 1: Embedding generation
-├── rank.py                    # Step 2: Scoring + ranking logic
-├── benchmark.py               # Performance benchmarking script
+├── rank.py                    # Step 2: Scoring + filtering + ranking logic
 └── submission.csv             # Final generated output
 ```
 
 ---
 
-## India-Native Thinking
-
-This system is purpose-built for the Indian job market:
-
-- **Education tier awareness**: Automatically classifies 30+ Indian institutions into Tier 1/2/3 — but as a *small additive bonus*, not a gate. This reflects the reality that IIT grads often have strong fundamentals, while explicitly preventing bias.
-- **Skill synonym dictionary**: 65+ entries covering abbreviations common on Indian resumes ("ML" → "Machine Learning", "ReactJS" → "React", "K8s" → "Kubernetes").
-- **Company culture mapping**: 50 Indian startups (Razorpay, CRED, Meesho…) and 20 enterprises (TCS, Infosys, Wipro…) for culture fit scoring.
-- **Indian city recognition**: 20+ cities parsed from JDs including both names for Bangalore/Bengaluru, Gurgaon/Gurugram.
-- **Experience parsing**: Handles "3 years", "2+ yrs", "18 months" — common formats in Indian CVs.
-
----
-
 ## Explainability
 
-Every candidate receives 3 human-readable reasons and flag notes:
+Every candidate receives highly specific, plain-language reasoning.
 
-```
-Rank #1: Vikram Reddy (89%)
-├── Strong semantic match (82%) — profile language closely mirrors JD requirements.
-├── Skills in python, tensorflow, nlp directly match the JD's required stack (75% skill match).
-└── 6.5 years of experience — within optimal range for this senior-level role.
-    ⚠ Flag: Slightly over-qualified
-
-Rank #5: Sneha Gupta (42%)
-├── Low skill overlap (15%) — candidate's stack differs significantly from JD requirements.
-├── Only 4.0 years experience — but in a different domain (backend vs data_science).
-└── VIT Vellore alumnus — Tier 2 education (+8% bonus).
-```
+**Example output from `submission.csv`:**
+> *"Senior AI Engineer at Apple with 5.9 years. Strong skill alignment including sentence-transformers, pinecone, weaviate. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."*
 
 ---
 
 ## Why This Approach Wins
 
-**Beyond keyword filters**: Traditional ATS systems look for exact string matches. They miss that "built production ML pipelines" is relevant to a "Senior Machine Learning Engineer" role. Our semantic embedding approach captures this context because it encodes *meaning*, not just *words*.
+**Zero Honeypots**: By implementing a hard-coded set of rules targeting temporal impossibilities, we completely bypass the 10% honeypot disqualifier rule.
 
-**Multi-signal, not single-metric**: A candidate who has the right skills but hasn't been active in 2 years should rank lower than one who's actively looking. A candidate from a startup background is a better fit for a startup JD than one from an enterprise — but they might have the same keywords. Our 9-signal approach captures these nuances in a way that's transparent, configurable, and explainable.
+**Beyond keyword filters**: Traditional ATS systems look for exact string matches. Our semantic embedding approach captures context because it encodes *meaning*, not just *words*.
+
+**Complete JD Alignment**: A candidate who has the right skills but works at a massive IT services firm, or hasn't responded to recruiters in a year, is heavily penalized. Our comprehensive 12-signal behavioral multiplier perfectly mirrors what human recruiters actually care about.
 
 ---
 
