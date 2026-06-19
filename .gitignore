@@ -8,6 +8,9 @@ dist/
 build/
 *.egg
 
+# Ignore the PUB folder (brackets escaped so git doesn't treat as character class)
+\[PUB\]\ India_runs_data_and_ai_challenge/
+
 # Virtual environment
 venv/
 .venv/

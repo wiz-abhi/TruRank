@@ -26,19 +26,31 @@ target_jd:
     - "mrr"
     - "map"
     - "evaluation"
+    - "elasticsearch"
+    - "opensearch"
+    - "hybrid search"
+    - "bge"
+    - "e5"
+    - "ranking"
+    - "retrieval"
+    - "a/b testing"
   preferred_skills:
     - "lora"
     - "qlora"
     - "peft"
     - "xgboost"
     - "learning-to-rank"
-  min_experience: 4
-  max_experience: 8
+  min_experience: 5
+  max_experience: 9
   domain: "data_science"
   culture_signals: ["startup mindset"]
   location_preferred:
     - "pune"
     - "noida"
+    - "hyderabad"
+    - "mumbai"
+    - "delhi"
+    - "ncr"
 
 # --- Signal weights ---
 # 1. Base Score (Max ~1.0 + education bonus)

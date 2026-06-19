@@ -1,6 +1,6 @@
 """
 Explainability engine — generates human-readable reasons for each
-candidate's ranking, using template-based generation.
+candidate's ranking, using candidate-specific profile details.
 """
 
 from __future__ import annotations
@@ -17,46 +17,60 @@ logger = get_logger(__name__)
 
 
 class ExplainerEngine:
-    def explain_rank(self, profile: CandidateProfile, scores: SignalScores) -> str:
-        """Generate a single cohesive paragraph explaining the candidate's rank."""
+    def explain_rank(self, profile: CandidateProfile, scores: SignalScores, jd: JobDescription = None) -> str:
+        """Generate a cohesive paragraph explaining the candidate's rank specifically."""
         reasons = []
 
-        # 1. Semantic + Experience
-        sem = scores.semantic_similarity
+        title = profile.job_titles[0] if profile.job_titles else "Professional"
+        company = profile.companies[0] if profile.companies else "Unknown Company"
         exp = profile.experience_years
+        
+        # 1. Base profile statement
+        base_stmt = f"{title} at {company} with {exp:.1f} years."
+        reasons.append(base_stmt)
 
+        # 2. Skill match specific statement
+        if jd and jd.required_skills:
+            c_canonical = {_canonicalize_skill(s) for s in profile.skills}
+            req_canonical = {_canonicalize_skill(s) for s in jd.required_skills}
+            matched_req = [s for s in jd.required_skills if _canonicalize_skill(s) in c_canonical]
+            
+            if len(matched_req) >= 3:
+                reasons.append(f"Strong skill alignment including {', '.join(matched_req[:3])}.")
+            elif len(matched_req) > 0:
+                reasons.append(f"Partial skill match including {', '.join(matched_req)}.")
+
+        # 3. Semantic / Domain
+        sem = scores.semantic_similarity
         if sem >= 0.70:
-            reasons.append(
-                f"Strong semantic profile match ({sem:.0%}) with {exp:.1f} years of relevant experience."
-            )
+            reasons.append("High semantic relevance to the ranking/retrieval domain.")
         elif sem >= 0.50:
-            reasons.append(
-                f"Moderate semantic match ({sem:.0%}) with {exp:.1f} years of experience."
-            )
-        else:
-            reasons.append(
-                f"Low semantic match ({sem:.0%}) but has {exp:.1f} years of experience."
-            )
+            reasons.append("Moderate semantic match to the core JD.")
 
-        # 2. Behavioral Signals (Redrob specific)
+        # 4. Behavioral Signals (Redrob specific)
         behav = scores.behavioral_multiplier
+        signals = profile.redrob_signals or {}
+        
+        behav_notes = []
         if behav > 1.2:
-            reasons.append("Highly active and responsive candidate.")
-        elif behav < 0.8:
-            reasons.append(
-                "Penalty applied due to low recruiter response rate or stale activity."
-            )
+            behav_notes.append("highly active")
+        
+        notice = signals.get("notice_period_days", 60)
+        if notice <= 30:
+            behav_notes.append(f"{notice}-day notice")
+            
+        location = profile.location
+        if location and jd and jd.location_preference:
+            # simple check if any preferred location is in the candidate's location string
+            is_pref = any(p.lower() in location.lower() for p in jd.location_preference.split(","))
+            if is_pref:
+                behav_notes.append(f"based in {location.split(',')[0]}")
+                
+        if behav_notes:
+            reasons.append(f"Candidate is {', '.join(behav_notes)}.")
 
-        # 3. Domain / Culture
-        dom = scores.domain_alignment
-        if dom > 0.6:
-            reasons.append(
-                "Background aligns well with data science and startup domains."
-            )
-
-        # 4. Education Bonus
-        if scores.education_tier_bonus > 0.1:
-            reasons.append("Tier-1 educational background.")
+        if behav < 0.8:
+            reasons.append("Warning: Low responsiveness or stale activity.")
 
         # Combine into a single string
         return " ".join(reasons)

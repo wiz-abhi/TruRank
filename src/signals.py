@@ -183,8 +183,50 @@ class SignalComputer:
         # 3. Not looking
         if not signals.get("open_to_work_flag", True):
             mult -= 0.2
+            
+        # 4. Notice Period (JD prefers sub-30 days)
+        notice_period = signals.get("notice_period_days", 60)
+        if notice_period <= 30:
+            mult += 0.1
+        elif notice_period > 90:
+            mult -= 0.15
+            
+        # 5. GitHub Activity Score
+        github_score = signals.get("github_activity_score", -1)
+        if github_score > 40:
+            mult += 0.15
+            
+        # 6. Profile Completeness
+        completeness = signals.get("profile_completeness_score", 100)
+        if completeness < 40:
+            mult -= 0.2
+            
+        # 7. Response Time
+        avg_resp_hours = signals.get("avg_response_time_hours", 48)
+        if avg_resp_hours < 24:
+            mult += 0.05
+            
+        # 8. Interview Completion Rate
+        int_completion = signals.get("interview_completion_rate", 1.0)
+        if int_completion < 0.3:
+            mult -= 0.2
+            
+        # 9. Saved by Recruiters
+        saved = signals.get("saved_by_recruiters_30d", 0)
+        if saved > 5:
+            mult += 0.05
+            
+        # 10 & 11. Verifications
+        verified_email = signals.get("verified_email", False)
+        verified_phone = signals.get("verified_phone", False)
+        if not verified_email and not verified_phone:
+            mult -= 0.1
+            
+        # 12. LinkedIn Connected
+        if signals.get("linkedin_connected", False):
+            mult += 0.05
 
-        return clamp(mult, lo=0.1, hi=1.5)
+        return clamp(mult, lo=0.1, hi=1.8)
 
     # ── Penalties ────────────────────────────────────────────────────
     def services_only_penalty(self, profile: CandidateProfile) -> float:
@@ -197,9 +239,9 @@ class SignalComputer:
         if not candidate_cos:
             return 1.0
 
-        # If all companies are in the enterprise/services list
+        # If all companies are in the enterprise/services list (JD Disqualifier)
         if candidate_cos.issubset(enterprise_cos):
-            return 0.7  # 30% penalty
+            return 0.1  # 90% penalty (JD says this is a disqualifier)
 
         return 1.0
 

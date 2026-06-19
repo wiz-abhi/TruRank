@@ -1,101 +1,101 @@
 candidate_id,rank,score,reasoning
-CAND_0030784,1,0.8984,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0099806,2,0.8636,Moderate semantic match (52%) with 4.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0015582,3,0.8508,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0002025,4,0.8477,Low semantic match (50%) but has 5.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0011162,5,0.8449,Moderate semantic match (57%) with 5.8 years of experience. Highly active and responsive candidate.
-CAND_0083790,6,0.8376,Moderate semantic match (50%) with 3.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0017960,7,0.8334,Moderate semantic match (55%) with 7.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0077337,8,0.8320,Low semantic match (47%) but has 7.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0004402,9,0.8242,Moderate semantic match (55%) with 6.0 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0093401,10,0.8221,Moderate semantic match (53%) with 6.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0062247,11,0.8170,Moderate semantic match (50%) with 7.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0046353,12,0.8148,Moderate semantic match (52%) with 6.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0015065,13,0.8141,Moderate semantic match (54%) with 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0012805,14,0.8137,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0079387,15,0.8133,Moderate semantic match (52%) with 6.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0016659,16,0.8113,Moderate semantic match (54%) with 4.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0026716,17,0.8102,Low semantic match (48%) but has 5.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0039838,18,0.8079,Moderate semantic match (55%) with 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0041669,19,0.8050,Moderate semantic match (54%) with 8.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0081846,20,0.8034,Low semantic match (44%) but has 6.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0099347,21,0.8033,Low semantic match (47%) but has 3.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0054318,22,0.8016,Moderate semantic match (52%) with 3.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0063622,23,0.7911,Low semantic match (47%) but has 5.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0093763,24,0.7896,Moderate semantic match (51%) with 5.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0073007,25,0.7890,Moderate semantic match (57%) with 5.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0018499,26,0.7882,Low semantic match (48%) but has 7.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0070514,27,0.7860,Moderate semantic match (51%) with 5.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0047521,28,0.7835,Moderate semantic match (52%) with 4.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0002120,29,0.7819,Moderate semantic match (55%) with 6.5 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0080465,30,0.7817,Moderate semantic match (53%) with 4.2 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0065195,31,0.7790,Moderate semantic match (51%) with 5.1 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0078002,32,0.7788,Low semantic match (50%) but has 6.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0010149,33,0.7770,Low semantic match (43%) but has 6.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0041918,34,0.7754,Low semantic match (49%) but has 5.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0086893,35,0.7751,Low semantic match (49%) but has 3.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0040887,36,0.7728,Low semantic match (47%) but has 4.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0077067,37,0.7709,Low semantic match (49%) but has 5.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0013314,38,0.7694,Low semantic match (47%) but has 3.6 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0033352,39,0.7691,Moderate semantic match (54%) with 5.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0018549,40,0.7690,Moderate semantic match (52%) with 6.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0050876,41,0.7681,Moderate semantic match (52%) with 6.0 years of experience. Tier-1 educational background.
-CAND_0046064,42,0.7654,Low semantic match (49%) but has 8.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0065786,43,0.7652,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0059017,44,0.7637,Moderate semantic match (54%) with 6.8 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0034164,45,0.7622,Low semantic match (50%) but has 3.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0000031,46,0.7621,Moderate semantic match (55%) with 6.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0034177,47,0.7615,Low semantic match (43%) but has 3.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0096823,48,0.7609,Moderate semantic match (51%) with 4.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0055960,49,0.7603,Low semantic match (48%) but has 4.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0096142,50,0.7591,Low semantic match (48%) but has 5.0 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0050860,51,0.7582,Low semantic match (47%) but has 3.9 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0037160,52,0.7575,Moderate semantic match (55%) with 6.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0081053,53,0.7569,Moderate semantic match (54%) with 5.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0035879,54,0.7568,Moderate semantic match (53%) with 4.5 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0092255,55,0.7537,Moderate semantic match (50%) with 5.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0040946,56,0.7520,Moderate semantic match (52%) with 6.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0074342,57,0.7499,Low semantic match (47%) but has 5.7 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0075574,58,0.7491,Moderate semantic match (53%) with 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0057701,59,0.7490,Moderate semantic match (56%) with 4.1 years of experience. Tier-1 educational background.
-CAND_0044222,60,0.7480,Moderate semantic match (53%) with 7.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0096209,61,0.7461,Moderate semantic match (52%) with 4.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0054829,62,0.7457,Low semantic match (48%) but has 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0099675,63,0.7454,Low semantic match (43%) but has 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0030468,64,0.7451,Low semantic match (44%) but has 5.4 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0046132,65,0.7450,Low semantic match (47%) but has 4.3 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0008239,66,0.7448,Low semantic match (49%) but has 4.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0092706,67,0.7448,Moderate semantic match (54%) with 5.8 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0088025,68,0.7447,Low semantic match (49%) but has 8.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0001218,69,0.7430,Moderate semantic match (56%) with 6.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0006418,70,0.7429,Low semantic match (48%) but has 5.7 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0081321,71,0.7427,Low semantic match (47%) but has 5.3 years of experience. Tier-1 educational background.
-CAND_0061265,72,0.7396,Moderate semantic match (54%) with 6.6 years of experience. Tier-1 educational background.
-CAND_0011687,73,0.7392,Low semantic match (49%) but has 7.8 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0079550,74,0.7379,Low semantic match (48%) but has 3.9 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0036184,75,0.7378,Moderate semantic match (51%) with 6.0 years of experience. Highly active and responsive candidate.
-CAND_0003841,76,0.7374,Low semantic match (50%) but has 5.0 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0044213,77,0.7370,Low semantic match (48%) but has 3.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0047542,78,0.7353,Moderate semantic match (54%) with 5.0 years of experience.
-CAND_0015578,79,0.7348,Moderate semantic match (54%) with 5.4 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0015057,80,0.7339,Moderate semantic match (52%) with 4.6 years of experience. Highly active and responsive candidate.
-CAND_0057736,81,0.7339,Moderate semantic match (50%) with 6.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0063585,82,0.7328,Moderate semantic match (53%) with 3.1 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0064888,83,0.7328,Low semantic match (46%) but has 5.8 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0069905,84,0.7326,Moderate semantic match (52%) with 6.6 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0073204,85,0.7319,Low semantic match (47%) but has 3.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0099965,86,0.7319,Moderate semantic match (50%) with 4.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0025640,87,0.7317,Moderate semantic match (53%) with 5.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0031982,88,0.7317,Low semantic match (47%) but has 3.7 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0063736,89,0.7311,Low semantic match (47%) but has 3.7 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0020708,90,0.7309,Moderate semantic match (54%) with 4.2 years of experience. Background aligns well with data science and startup domains.
-CAND_0006567,91,0.7303,Low semantic match (46%) but has 7.9 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0080315,92,0.7290,Moderate semantic match (53%) with 4.1 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0051004,93,0.7259,Low semantic match (50%) but has 4.7 years of experience. Tier-1 educational background.
-CAND_0068513,94,0.7247,Low semantic match (50%) but has 4.0 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0023587,95,0.7238,Low semantic match (48%) but has 3.2 years of experience. Highly active and responsive candidate. Background aligns well with data science and startup domains.
-CAND_0067866,96,0.7236,Moderate semantic match (52%) with 6.4 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0065430,97,0.7233,Moderate semantic match (50%) with 4.4 years of experience. Highly active and responsive candidate.
-CAND_0032807,98,0.7211,Low semantic match (50%) but has 4.2 years of experience. Background aligns well with data science and startup domains. Tier-1 educational background.
-CAND_0029117,99,0.7207,Low semantic match (46%) but has 5.6 years of experience. Highly active and responsive candidate. Tier-1 educational background.
-CAND_0053591,100,0.7202,Moderate semantic match (52%) with 5.3 years of experience. Highly active and responsive candidate.
+CAND_0002025,1,1.0000,"Senior AI Engineer at Apple with 5.9 years. Strong skill alignment including sentence-transformers, pinecone, weaviate. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0018499,2,1.0000,"Senior Machine Learning Engineer at Zomato with 7.2 years. Strong skill alignment including embeddings, pinecone, weaviate. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0018549,3,1.0000,"Recommendation Systems Engineer at Uber with 6.8 years. Strong skill alignment including weaviate, qdrant, milvus. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0041610,4,1.0000,"Recommendation Systems Engineer at Zoho with 6.7 years. Strong skill alignment including embeddings, elasticsearch, opensearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0046064,5,1.0000,"Senior NLP Engineer at Salesforce with 8.9 years. Strong skill alignment including pinecone, python, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0062247,6,1.0000,"AI Engineer at Google with 7.3 years. Partial skill match including pinecone, qdrant. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0065195,7,1.0000,"Search Engineer at CRED with 5.1 years. Partial skill match including qdrant, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0077337,8,1.0000,"Staff Machine Learning Engineer at Paytm with 7.0 years. Strong skill alignment including sentence-transformers, pinecone, qdrant. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0079387,9,1.0000,"AI Engineer at Microsoft with 6.9 years. Strong skill alignment including sentence-transformers, python, opensearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0099806,10,1.0000,"AI Engineer at Mad Street Den with 4.6 years. Strong skill alignment including embeddings, sentence-transformers, weaviate. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0030468,11,0.9981,"Senior Applied Scientist at Swiggy with 5.4 years. Partial skill match including milvus, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0081846,12,0.9971,"Lead AI Engineer at Razorpay with 6.7 years. Strong skill alignment including embeddings, qdrant, python. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0011687,13,0.9964,"Senior NLP Engineer at Niramai with 7.8 years. Strong skill alignment including embeddings, weaviate, faiss. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0049538,14,0.9832,"Applied ML Engineer at Saarthi.ai with 5.8 years. Strong skill alignment including embeddings, milvus, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0037944,15,0.9796,"Senior Data Scientist at Vedantu with 4.9 years. Strong skill alignment including embeddings, sentence-transformers, python. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0041669,16,0.9777,"Recommendation Systems Engineer at CRED with 8.0 years. Strong skill alignment including weaviate, qdrant, milvus. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0078002,17,0.9721,Machine Learning Engineer at Meta with 6.3 years. Partial skill match including weaviate. Moderate semantic match to the core JD. Candidate is highly active.
+CAND_0017960,18,0.9655,"Recommendation Systems Engineer at Nykaa with 7.7 years. Partial skill match including qdrant, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0092255,19,0.9617,"ML Engineer at InMobi with 5.2 years. Partial skill match including weaviate, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0039754,20,0.9535,"Senior Applied Scientist at Meta with 16.2 years. Strong skill alignment including weaviate, qdrant, python. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0008239,21,0.9520,"AI Engineer at Apple with 4.0 years. Strong skill alignment including weaviate, milvus, faiss. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0002120,22,0.9480,"ML Engineer at HCL with 6.5 years. Strong skill alignment including embeddings, pinecone, qdrant. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0070514,23,0.9466,"AI Specialist at Glance with 5.5 years. Strong skill alignment including pinecone, faiss, python. Candidate is highly active."
+CAND_0027691,24,0.9460,"NLP Engineer at Haptik with 6.5 years. Strong skill alignment including embeddings, weaviate, python. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0055960,25,0.9453,AI Specialist at Dream11 with 4.9 years. Partial skill match including qdrant. Candidate is highly active.
+CAND_0052682,26,0.9450,"NLP Engineer at Aganitha with 6.6 years. Strong skill alignment including embeddings, faiss, python. Candidate is highly active, 30-day notice."
+CAND_0081053,27,0.9440,"NLP Engineer at Glance with 5.4 years. Strong skill alignment including weaviate, qdrant, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0030784,28,0.9424,"Data Scientist at Yellow.ai with 4.4 years. Strong skill alignment including embeddings, sentence-transformers, pinecone. Candidate is highly active."
+CAND_0061655,29,0.9399,"Machine Learning Engineer at Krutrim with 4.6 years. Strong skill alignment including pinecone, qdrant, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0088025,30,0.9361,"Staff Machine Learning Engineer at Yellow.ai with 8.6 years. Strong skill alignment including pinecone, python, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0059017,31,0.9357,"AI Research Engineer at PhonePe with 6.8 years. Strong skill alignment including sentence-transformers, faiss, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0036184,32,0.9345,"Recommendation Systems Engineer at CRED with 6.0 years. Strong skill alignment including embeddings, sentence-transformers, pinecone. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0063118,33,0.9310,"Analytics Engineer at Freshworks with 4.6 years. Partial skill match including elasticsearch. Candidate is highly active, 30-day notice."
+CAND_0020708,34,0.9289,"Search Engineer at PolicyBazaar with 4.2 years. Strong skill alignment including sentence-transformers, milvus, python. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0099347,35,0.9239,Computer Vision Engineer at Swiggy with 3.5 years. Partial skill match including elasticsearch. Candidate is highly active.
+CAND_0004402,36,0.9237,"AI Research Engineer at Yellow.ai with 6.0 years. Strong skill alignment including sentence-transformers, qdrant, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0018722,37,0.9231,"Recommendation Systems Engineer at Saarthi.ai with 6.6 years. Partial skill match including weaviate, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0005311,38,0.9229,"AI Research Engineer at Aganitha with 5.7 years. Partial skill match including qdrant. Candidate is highly active, 30-day notice."
+CAND_0096104,39,0.9196,"AI Specialist at Yellow.ai with 7.0 years. Partial skill match including pinecone. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0086022,40,0.9171,"Senior Applied Scientist at Sarvam AI with 5.3 years. Strong skill alignment including embeddings, sentence-transformers, pinecone. Moderate semantic match to the core JD. Candidate is highly active, 0-day notice."
+CAND_0069905,41,0.9144,"Applied ML Engineer at Sarvam AI with 6.6 years. Strong skill alignment including sentence-transformers, weaviate, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0073007,42,0.9129,"AI Specialist at Aganitha with 5.8 years. Strong skill alignment including embeddings, milvus, faiss. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0040887,43,0.9116,"Machine Learning Engineer at Netflix with 4.7 years. Strong skill alignment including milvus, faiss, python. Candidate is highly active, 15-day notice."
+CAND_0006418,44,0.9094,"Machine Learning Engineer at Verloop.io with 5.7 years. Strong skill alignment including embeddings, weaviate, qdrant. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0014440,45,0.9086,"Recommendation Systems Engineer at CRED with 6.4 years. Strong skill alignment including qdrant, milvus, faiss. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0074342,46,0.9073,"Data Scientist at Zoho with 5.7 years. Partial skill match including sentence-transformers, opensearch. Candidate is highly active, 30-day notice."
+CAND_0065786,47,0.9044,"AI Specialist at Swiggy with 4.9 years. Partial skill match including pinecone, qdrant. Candidate is highly active."
+CAND_0066999,48,0.8997,"Recommendation Systems Engineer at Microsoft with 5.9 years. Strong skill alignment including embeddings, pinecone, faiss. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0076163,49,0.8975,"NLP Engineer at Ola with 6.9 years. Strong skill alignment including sentence-transformers, weaviate, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0010149,50,0.8952,"ML Engineer at Glance with 6.9 years. Partial skill match including milvus, elasticsearch. Candidate is highly active."
+CAND_0080465,51,0.8933,"ML Engineer at Meesho with 4.2 years. Partial skill match including qdrant, milvus. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0051004,52,0.8931,"Senior Data Scientist at CRED with 4.7 years. Partial skill match including embeddings, qdrant. Moderate semantic match to the core JD. Candidate is highly active, 15-day notice."
+CAND_0055992,53,0.8915,"AI Engineer at CRED with 16.9 years. Strong skill alignment including embeddings, milvus, faiss. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0059557,54,0.8913,Computer Vision Engineer at CRED with 6.5 years. Partial skill match including embeddings. Candidate is highly active.
+CAND_0015065,55,0.8907,"AI Research Engineer at Flipkart with 3.9 years. Partial skill match including embeddings, qdrant. Candidate is highly active."
+CAND_0051615,56,0.8887,"Search Engineer at Meta with 4.6 years. Partial skill match including sentence-transformers, milvus. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0008425,57,0.8876,"Senior NLP Engineer at Ola with 7.8 years. Strong skill alignment including sentence-transformers, qdrant, python. Candidate is highly active."
+CAND_0011162,58,0.8872,"Recommendation Systems Engineer at upGrad with 5.8 years. Strong skill alignment including embeddings, sentence-transformers, pinecone. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0050876,59,0.8870,"Applied ML Engineer at Freshworks with 6.0 years. Strong skill alignment including sentence-transformers, qdrant, faiss. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0063622,60,0.8865,"Computer Vision Engineer at Niramai with 5.2 years. Candidate is highly active, 30-day notice."
+CAND_0043228,61,0.8851,"Applied ML Engineer at Zoho with 6.8 years. Strong skill alignment including sentence-transformers, weaviate, opensearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0098217,62,0.8843,"ML Engineer at Glance with 6.4 years. Partial skill match including pinecone, faiss. Candidate is highly active."
+CAND_0030049,63,0.8842,Data Analyst at CRED with 7.0 years. Partial skill match including faiss. Candidate is highly active.
+CAND_0074735,64,0.8810,"Applied ML Engineer at Rephrase.ai with 5.5 years. Partial skill match including weaviate, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0080534,65,0.8776,"ML Engineer at Genpact AI with 3.8 years. Partial skill match including elasticsearch, opensearch. Candidate is highly active, 30-day notice."
+CAND_0041918,66,0.8758,AI Specialist at Glance with 5.7 years. Candidate is highly active.
+CAND_0093763,67,0.8733,"Senior Software Engineer (ML) at Swiggy with 5.0 years. Partial skill match including sentence-transformers, faiss. Candidate is highly active."
+CAND_0098846,68,0.8720,AI Engineer at upGrad with 7.6 years. Partial skill match including qdrant. Candidate is highly active.
+CAND_0044213,69,0.8716,AI Specialist at Haptik with 3.7 years. Partial skill match including python. Candidate is highly active.
+CAND_0037566,70,0.8715,"Machine Learning Engineer at LinkedIn with 6.9 years. Partial skill match including pinecone, elasticsearch. Candidate is highly active, 15-day notice."
+CAND_0093401,71,0.8696,AI Specialist at Haptik with 6.0 years. Partial skill match including embeddings. Moderate semantic match to the core JD. Candidate is highly active.
+CAND_0071974,72,0.8667,"Senior AI Engineer at Netflix with 7.8 years. Strong skill alignment including embeddings, sentence-transformers, pinecone. Candidate is highly active."
+CAND_0034177,73,0.8641,Senior Software Engineer (ML) at Mad Street Den with 3.6 years. Partial skill match including milvus. Candidate is highly active.
+CAND_0064888,74,0.8641,"ML Engineer at Verloop.io with 5.8 years. Partial skill match including embeddings, elasticsearch. Candidate is highly active, 30-day notice."
+CAND_0001405,75,0.8616,"Data Scientist at Infosys with 3.5 years. Strong skill alignment including weaviate, qdrant, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0058688,76,0.8614,"AI Engineer at Vedantu with 6.7 years. Partial skill match including embeddings, milvus. Candidate is highly active, 15-day notice."
+CAND_0026716,77,0.8598,"Computer Vision Engineer at PharmEasy with 5.6 years. Partial skill match including pinecone, weaviate. Candidate is highly active."
+CAND_0093912,78,0.8588,"Senior Data Scientist at Razorpay with 5.3 years. Strong skill alignment including embeddings, milvus, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0025640,79,0.8584,"AI Research Engineer at HCL with 5.6 years. Strong skill alignment including faiss, elasticsearch, opensearch. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."
+CAND_0019480,80,0.8570,"NLP Engineer at Meesho with 2.8 years. Partial skill match including milvus, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0063736,81,0.8563,"Data Scientist at Krutrim with 3.7 years. Partial skill match including embeddings, milvus. Candidate is highly active."
+CAND_0099965,82,0.8558,Junior ML Engineer at Niramai with 4.6 years. Partial skill match including opensearch. Moderate semantic match to the core JD. Candidate is highly active.
+CAND_0079550,83,0.8549,AI Specialist at Zomato with 3.9 years. Partial skill match including python. Candidate is highly active.
+CAND_0050860,84,0.8525,"Junior ML Engineer at PolicyBazaar with 3.9 years. Partial skill match including embeddings, milvus. Candidate is highly active."
+CAND_0076482,85,0.8515,"ML Engineer at Flipkart with 6.6 years. Strong skill alignment including embeddings, pinecone, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0044890,86,0.8509,AI Research Engineer at Haptik with 5.0 years. Partial skill match including faiss. Moderate semantic match to the core JD. Candidate is highly active.
+CAND_0077067,87,0.8502,"AI Specialist at PolicyBazaar with 5.4 years. Strong skill alignment including pinecone, python, elasticsearch. Candidate is highly active."
+CAND_0054318,88,0.8490,"AI Research Engineer at BYJU'S with 3.5 years. Partial skill match including faiss, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0053591,89,0.8486,"AI Engineer at Ola with 5.3 years. Strong skill alignment including embeddings, sentence-transformers, qdrant. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0064326,90,0.8475,"Search Engineer at Sarvam AI with 7.6 years. Strong skill alignment including weaviate, milvus, python. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0058517,91,0.8471,Computer Vision Engineer at Freshworks with 5.1 years. Candidate is highly active.
+CAND_0022026,92,0.8467,"Computer Vision Engineer at Rephrase.ai with 3.1 years. Partial skill match including sentence-transformers, python. Candidate is highly active."
+CAND_0086893,93,0.8448,"ML Engineer at Unacademy with 3.9 years. Partial skill match including elasticsearch, opensearch. Candidate is highly active."
+CAND_0035879,94,0.8440,"AI Research Engineer at Krutrim with 4.5 years. Strong skill alignment including pinecone, python, elasticsearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0044222,95,0.8437,"AI Engineer at PolicyBazaar with 7.7 years. Strong skill alignment including weaviate, qdrant, opensearch. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0061265,96,0.8424,"Recommendation Systems Engineer at Zoho with 6.6 years. Strong skill alignment including embeddings, qdrant, milvus. Moderate semantic match to the core JD. Candidate is highly active."
+CAND_0090155,97,0.8405,"ML Engineer at Swiggy with 5.8 years. Strong skill alignment including pinecone, qdrant, milvus. Candidate is highly active."
+CAND_0023215,98,0.8400,Junior ML Engineer at Verloop.io with 4.4 years. Candidate is highly active.
+CAND_0055951,99,0.8393,"Analytics Engineer at PolicyBazaar with 7.2 years. Partial skill match including python. Candidate is highly active, 30-day notice."
+CAND_0094358,100,0.8385,"ML Engineer at Saarthi.ai with 4.1 years. Partial skill match including qdrant, elasticsearch. Candidate is highly active, 30-day notice."

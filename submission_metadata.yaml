@@ -56,8 +56,10 @@ ai_usage_summary: |
 methodology_summary: |
   A two-step pipeline. We pre-compute all semantic embeddings using sentence-transformers (all-MiniLM-L6-v2) 
   to bypass CPU runtime constraints. Then, rank.py scores candidates against a hackathon-specific target JD 
-  using vector similarity, and heavily modifies the score using Redrob behavioral signals (response rate, 
-  activity recency). Tie breaks are handled, and a template engine generates plain-language reasoning.
+  using vector similarity, and heavily modifies the score using 12 specific Redrob behavioral signals (response rate, 
+  activity recency, notice period, GitHub score, completeness, interview completion rate). 
+  We explicitly implemented a HoneypotDetector to catch profiles with impossible career durations or 0-month expert skills, 
+  filtering them out of the top 100. A template engine generates candidate-specific reasoning.
 
 # ============================================================================
 # Declarations

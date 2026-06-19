@@ -11,6 +11,7 @@ from src.jd_parser import JobDescription
 from src.profile_parser import CandidateProfile
 from src.signals import SignalComputer
 from src.explainer import ExplainerEngine
+from src.honeypot_detector import HoneypotDetector
 from src.utils import load_config
 
 
@@ -72,7 +73,25 @@ def run_ranking(cache_path: str, output_path: str):
     print("Sorting candidates...")
     scored_candidates.sort(key=lambda x: (-x[0], x[1]))
 
-    top_100 = scored_candidates[:100]
+    print("Running honeypot detection on top candidates...")
+    detector = HoneypotDetector()
+    top_100 = []
+    honeypots_caught = 0
+    
+    # Keep pulling until we have 100 safe candidates
+    for score, cid, profile, scores in scored_candidates:
+        if len(top_100) >= 100:
+            break
+            
+        # Detect honeypots
+        hp_result = detector.detect(profile.raw)
+        if hp_result.is_honeypot:
+            honeypots_caught += 1
+            continue
+            
+        top_100.append((score, cid, profile, scores))
+        
+    print(f"Caught and filtered {honeypots_caught} honeypots from the top ranking.")
 
     print("Generating explanations for top 100...")
     explainer = ExplainerEngine()
@@ -80,7 +99,7 @@ def run_ranking(cache_path: str, output_path: str):
 
     for rank, (score, cid, profile, scores) in enumerate(top_100, start=1):
         # Generate reasoning based on the new SignalScores structure
-        reasoning = explainer.explain_rank(profile, scores)
+        reasoning = explainer.explain_rank(profile, scores, jd)
         # Format the reasoning properly to fit in CSV (no newlines in the cell)
         reasoning = reasoning.replace("\n", " ").replace("\r", "").strip()
         results.append(
