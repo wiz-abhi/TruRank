@@ -98,3 +98,19 @@ def test_location_and_relocation_are_used():
     abroad = score(candidate("ML Engineer", "Built search systems.", supported_skills(), "Toronto"))
     relocating = score(candidate("ML Engineer", "Built search systems.", supported_skills(), "Bengaluru", True))
     assert pune.location_fit > relocating.location_fit > abroad.location_fit
+
+
+def test_stable_product_career_beats_short_services_roles():
+    stable_raw = candidate("Senior ML Engineer", "Shipped search products to end users.", supported_skills())
+    stable_raw["career_history"][0]["industry"] = "Software Product"
+    unstable_raw = candidate("Senior ML Engineer", "Delivered client projects.", supported_skills())
+    unstable_raw["career_history"] = [
+        {"company": f"Consultancy {i}", "title": "Senior ML Engineer", "industry": "IT Services",
+         "description": "Delivered client projects.", "duration_months": 10}
+        for i in range(4)
+    ]
+    stable = score(stable_raw)
+    unstable = score(unstable_raw)
+    assert stable.career_stability > unstable.career_stability
+    assert stable.product_company_fit > unstable.product_company_fit
+    assert stable.composite_score > unstable.composite_score

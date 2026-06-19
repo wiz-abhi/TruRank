@@ -58,6 +58,14 @@ class ExplainerEngine:
         if scores.location_fit >= 0.8:
             reasons.append("Location is well aligned with the Pune/Noida hiring preference.")
 
+        if scores.product_company_fit >= 0.7:
+            reasons.append("Career history includes relevant product-company delivery experience.")
+        elif scores.product_company_fit <= 0.2:
+            reasons.append("Concern: career evidence is concentrated in services or consulting environments.")
+
+        if scores.career_stability < 0.4:
+            reasons.append("Concern: several short tenures reduce confidence in long-term fit.")
+
         # 4. Behavioral Signals (Redrob specific)
         behav = scores.behavioral_multiplier
         signals = profile.redrob_signals or {}

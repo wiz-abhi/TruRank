@@ -61,6 +61,7 @@ class HoneypotDetector:
         education = raw.get("education", [])
         signals = raw.get("redrob_signals", {})
         exp_years = profile.get("years_of_experience", 0) if isinstance(profile, dict) else 0
+        today = date.today()
 
         # ── HARD FLAG 1: Expert proficiency with 0 months duration ──
         if isinstance(skills, list):
@@ -108,6 +109,29 @@ class HoneypotDetector:
                 end = _parse_date(role.get("end_date"))
                 if start and end and end < start:
                     flags.append((3, f"Role at {role.get('company', '?')}: end_date {end} before start_date {start}"))
+                if start and start > today:
+                    flags.append((3, f"Role at {role.get('company', '?')}: future start date {start}"))
+                if end and end > today:
+                    flags.append((2, f"Role at {role.get('company', '?')}: future end date {end}"))
+
+        # Overlapping full-time roles are possible, but multiple long overlaps
+        # combined with inflated durations are a strong consistency warning.
+        dated_roles = []
+        if isinstance(career, list):
+            for role in career:
+                if not isinstance(role, dict):
+                    continue
+                start = _parse_date(role.get("start_date"))
+                end = _parse_date(role.get("end_date")) or today
+                if start and end:
+                    dated_roles.append((start, end, role.get("company", "?")))
+        long_overlaps = 0
+        for idx, (start_a, end_a, _) in enumerate(dated_roles):
+            for start_b, end_b, _ in dated_roles[idx + 1:]:
+                overlap_days = (min(end_a, end_b) - max(start_a, start_b)).days
+                long_overlaps += overlap_days > 365
+        if long_overlaps >= 2:
+            flags.append((3, f"{long_overlaps} career-role overlaps longer than one year"))
 
         # ── HARD FLAG 5: Experience years impossible given graduation ──
         if isinstance(education, list) and education:

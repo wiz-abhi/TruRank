@@ -73,6 +73,9 @@ class SignalScores:
     skill_evidence: float = 0.0
     location_fit: float = 0.0
     profile_trust: float = 1.0
+    career_stability: float = 0.0
+    product_company_fit: float = 0.0
+    work_mode_fit: float = 0.0
     education_tier_bonus: float = 0.0
     base_score: float = 0.0
     behavioral_multiplier: float = 1.0
@@ -91,6 +94,9 @@ class SignalScores:
             "skill_evidence": round(self.skill_evidence, 4),
             "location_fit": round(self.location_fit, 4),
             "profile_trust": round(self.profile_trust, 4),
+            "career_stability": round(self.career_stability, 4),
+            "product_company_fit": round(self.product_company_fit, 4),
+            "work_mode_fit": round(self.work_mode_fit, 4),
             "education_tier_bonus": round(self.education_tier_bonus, 4),
             "base_score": round(self.base_score, 4),
             "behavioral_multiplier": round(self.behavioral_multiplier, 4),
@@ -134,6 +140,9 @@ class SignalComputer:
         scores.skill_evidence = self.skill_evidence_score(profile, jd)
         scores.location_fit = self.location_fit_score(profile)
         scores.profile_trust = self.profile_trust_score(profile)
+        scores.career_stability = self.career_stability_score(profile)
+        scores.product_company_fit = self.product_company_fit_score(profile)
+        scores.work_mode_fit = self.work_mode_fit_score(profile)
         scores.education_tier_bonus = self.education_tier_bonus(profile.education_tier)
 
         w = self._weights
@@ -147,6 +156,9 @@ class SignalComputer:
             + w.get("culture_fit", 0.06) * scores.culture_fit
             + w.get("location_fit", 0.05) * scores.location_fit
             + w.get("skill_recency", 0.05) * scores.skill_recency
+            + w.get("career_stability", 0.06) * scores.career_stability
+            + w.get("product_company_fit", 0.07) * scores.product_company_fit
+            + w.get("work_mode_fit", 0.02) * scores.work_mode_fit
         )
         scores.base_score = base
 
@@ -316,6 +328,54 @@ class SignalComputer:
             return 0.65
         return 0.2 if profile.raw.get("profile", {}).get("country") == "India" else 0.0
 
+    def work_mode_fit_score(self, profile: CandidateProfile) -> float:
+        mode = str(profile.redrob_signals.get("preferred_work_mode", "")).lower()
+        if mode in ("hybrid", "flexible"):
+            return 1.0
+        if mode == "onsite":
+            return 0.8 if self.location_fit_score(profile) >= 0.8 else 0.45
+        if mode == "remote":
+            return 0.55
+        return 0.5
+
+    def career_stability_score(self, profile: CandidateProfile) -> float:
+        """Reward sustained delivery and penalize repeated short title-chasing moves."""
+        roles = [r for r in profile.raw.get("career_history", []) if isinstance(r, dict)]
+        if not roles:
+            return 0.4
+        durations = [float(r.get("duration_months", 0) or 0) for r in roles]
+        short = sum(0 < months < 20 for months in durations)
+        sustained = sum(months >= 30 for months in durations)
+        senior_words = ("senior", "staff", "principal", "lead")
+        title_chasing = 0
+        for previous, current in zip(roles[1:], roles[:-1]):
+            if float(current.get("duration_months", 0) or 0) < 20:
+                old_level = sum(word in str(previous.get("title", "")).lower() for word in senior_words)
+                new_level = sum(word in str(current.get("title", "")).lower() for word in senior_words)
+                title_chasing += new_level > old_level
+        score = 0.55 + min(0.3, sustained * 0.12) - min(0.45, short * 0.1 + title_chasing * 0.12)
+        return clamp(score)
+
+    def product_company_fit_score(self, profile: CandidateProfile) -> float:
+        """Use supplied industry and company-size metadata, not only name lists."""
+        roles = [r for r in profile.raw.get("career_history", []) if isinstance(r, dict)]
+        if not roles:
+            return 0.4
+        services_terms = ("it services", "consulting", "outsourcing", "professional services")
+        product_terms = ("software product", "internet", "e-commerce", "fintech", "hr tech", "marketplace", "saas")
+        product = services = 0
+        for role in roles:
+            industry = str(role.get("industry", "")).lower()
+            description = str(role.get("description", "")).lower()
+            product += any(term in industry for term in product_terms)
+            services += any(term in industry for term in services_terms)
+            product += any(term in description for term in ("product team", "customers", "end users", "user engagement"))
+        if product:
+            return clamp(0.65 + 0.12 * product)
+        if services == len(roles):
+            return 0.1
+        return 0.45
+
     def profile_trust_score(self, profile: CandidateProfile) -> float:
         skills = [s for s in profile.raw.get("skills", []) if isinstance(s, dict)]
         if not skills:
@@ -336,7 +396,16 @@ class SignalComputer:
             return 1.0
 
         # If all companies are in the enterprise/services list (JD Disqualifier)
-        if candidate_cos.issubset(enterprise_cos):
+        roles = [r for r in profile.raw.get("career_history", []) if isinstance(r, dict)]
+        services_industries = all(
+            any(term in str(r.get("industry", "")).lower() for term in ("it services", "consulting", "outsourcing"))
+            for r in roles
+        ) if roles else False
+        normalized_services = all(
+            any(alias in company for alias in enterprise_cos)
+            for company in candidate_cos
+        )
+        if normalized_services or services_industries:
             return 0.1  # 90% penalty (JD says this is a disqualifier)
 
         return 1.0

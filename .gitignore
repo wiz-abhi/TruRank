@@ -10,12 +10,13 @@ build/
 
 # Ignore the PUB folder (brackets escaped so git doesn't treat as character class)
 \[PUB\]\ India_runs_data_and_ai_challenge/
-SOLUTION_IMPROVEMENTS.md
 Provided_Dataset/
+
 # Virtual environment
 venv/
 .venv/
 env/
+/improvements
 
 # IDE
 .vscode/
