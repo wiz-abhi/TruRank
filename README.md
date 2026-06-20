@@ -44,6 +44,9 @@ submission.csv
 
 ### Signal Computation
 The `SignalComputer` first establishes technical relevance from career evidence, then uses behavioral metrics as a bounded availability modifier:
+- **Career Stability**: Rewards sustained tenures and heavily penalizes repeated title-chasing (sub-20 month job hops).
+- **Product vs. Services Classification**: Actively boosts candidates with Product, SaaS, or Fintech backgrounds while penalizing those concentrated heavily in IT services, consulting, or outsourcing.
+- **Work-Mode Compatibility**: Matches candidate preferences (Hybrid/Flexible) against the JD.
 - **Notice Period**: Bonus for sub-30 days, penalty for >90 days
 - **Recency**: Bonus for <60 days active, heavy penalty for >365 days
 - **Response Rate & Time**: Bonuses for fast responders (<24h) and high response rates
@@ -52,6 +55,7 @@ The `SignalComputer` first establishes technical relevance from career evidence,
 - **Trust Metrics**: Bonuses for LinkedIn connectivity and recruiter saves, penalties for lack of verified email/phone
 - **Location & Relocation**: Pune/Noida preference, nearby Indian hubs, and willingness to relocate
 - **Profile Trust**: Penalties for contradictory claims such as expert skills with zero months of use
+- **Advanced Timeline Validation (Honeypots)**: Rejects profiles with dates in the future (e.g., 2029) or logically impossible overlapping full-time roles.
 - **Disqualifiers**: A severe 90% penalty is applied to candidates whose entire career history consists exclusively of enterprise consulting services (TCS, Infosys, etc.), as explicitly mandated by the actual JD.
 
 All weights and thresholds are strictly configured in [`config.yaml`](config.yaml).
