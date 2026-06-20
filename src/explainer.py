@@ -73,7 +73,7 @@ class ExplainerEngine:
         signals = profile.redrob_signals or {}
         
         behav_notes = []
-        if behav > 1.2:
+        if behav >= 0.95:
             behav_notes.append("highly active")
         
         notice = signals.get("notice_period_days", 60)
