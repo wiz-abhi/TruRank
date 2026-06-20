@@ -52,20 +52,20 @@ target_jd:
     - "delhi"
     - "ncr"
 
-# --- Signal weights ---
+# --- Signal weights (must sum to 1.00) ---
 # 1. Base Score (Max ~1.0 + education bonus)
 weights:
   semantic_similarity: 0.15
   skill_match: 0.08
-  skill_evidence: 0.12
-  career_evidence: 0.25
+  skill_evidence: 0.11
+  career_evidence: 0.24
   experience_fit: 0.08
   domain_alignment: 0.06
   culture_fit: 0.04
   location_fit: 0.05
   skill_recency: 0.05
   career_stability: 0.06
-  product_company_fit: 0.07
+  product_company_fit: 0.06
   work_mode_fit: 0.02
   career_velocity: 0.00
 

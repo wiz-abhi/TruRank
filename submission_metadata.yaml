@@ -44,22 +44,44 @@ compute:
 # AI tools declaration
 # ============================================================================
 ai_tools_used:
-  - "Gemini"
+  - "Gemini (DeepMind Antigravity)"
+  - "OpenAI Codex"
 
 ai_usage_summary: |
-  Used DeepMind's Antigravity (Gemini) for coding, structuring the repository,
-  writing explainability heuristics, and optimizing the pipeline to meet CPU limits.
+  Used DeepMind's Antigravity (Gemini) for initial architecture, repository structuring,
+  and pipeline design. Used OpenAI Codex for evidence-first scoring refinements,
+  skill claim validation, career stability signals, and advanced honeypot detection.
 
 # ============================================================================
 # Approach summary (optional but recommended)
 # ============================================================================
 methodology_summary: |
-  A two-step pipeline. We pre-compute all semantic embeddings using sentence-transformers (all-MiniLM-L6-v2) 
-  to bypass CPU runtime constraints. Then, rank.py scores candidates against a hackathon-specific target JD 
-  using vector similarity, and heavily modifies the score using 12 specific Redrob behavioral signals (response rate, 
-  activity recency, notice period, GitHub score, completeness, interview completion rate). 
-  We explicitly implemented a HoneypotDetector to catch profiles with impossible career durations or 0-month expert skills, 
-  filtering them out of the top 100. A template engine generates candidate-specific reasoning.
+  A two-step pipeline optimised for CPU-only execution within the 5-minute limit.
+
+  Step 1 — Precompute (offline): Parse 100K JSONL candidates, build evidence-first
+  embedding text (career descriptions before self-declared skills), and encode via
+  sentence-transformers (all-MiniLM-L6-v2). Cache to disk as candidates_cache.pkl.
+
+  Step 2 — Rank (timed): Load cache, compute cosine similarity against a rich JD
+  embedding, then score each candidate across 12 weighted signals:
+    - Career evidence (retrieval/ranking/production keywords in role history)
+    - Skill evidence (validated by duration, proficiency, endorsements, assessments)
+    - Semantic similarity, skill-name match, experience fit, domain alignment
+    - Career stability (penalises sub-20-month title-chasing hops)
+    - Product-vs-services fit (boosts SaaS/product, penalises services-only)
+    - Location fit (Pune/Noida preference, relocation awareness)
+    - Work-mode compatibility, culture fit
+  A bounded (0.65–1.25) behavioral multiplier uses 12 Redrob signals (notice period,
+  GitHub score, response rate, profile completeness, interview completion, etc.).
+  Hard penalties applied for services-only careers (90%) and unrelated titles (70%).
+  Profile trust scoring penalises expert claims with zero months of usage.
+
+  Honeypot Detection: A severity-threshold detector catches impossible timelines,
+  future dates, overlapping full-time roles, and inflated career durations. Flagged
+  candidates are excluded before the top 100 is selected.
+
+  Explainability: Each candidate receives a profile-specific reasoning paragraph
+  referencing their job title, company, matched skills, and behavioral traits.
 
 # ============================================================================
 # Declarations
