@@ -71,8 +71,10 @@ class HoneypotDetector:
                 and s.get("proficiency") == "expert"
                 and s.get("duration_months", -1) == 0
             ]
-            if len(expert_zero) >= 3:
+            if len(expert_zero) >= 2:
                 flags.append((3, f"{len(expert_zero)} skills listed as 'expert' with 0 months usage"))
+            elif len(expert_zero) == 1:
+                flags.append((1, f"1 skill listed as 'expert' with 0 months usage: {expert_zero[0].get('name')}"))
 
         # ── HARD FLAG 2: Role duration vastly exceeds calendar span ──
         if isinstance(career, list):
@@ -84,8 +86,12 @@ class HoneypotDetector:
                 dur_months = role.get("duration_months", 0)
                 if start and end and dur_months > 0:
                     actual_months = (end.year - start.year) * 12 + (end.month - start.month)
-                    if actual_months > 0 and dur_months > actual_months * 2 and dur_months > 24:
-                        flags.append((3, f"Role at {role.get('company', '?')}: claims {dur_months}mo but dates span only {actual_months}mo"))
+                    if actual_months > 0:
+                        ratio = dur_months / actual_months
+                        if ratio > 2.0 and dur_months > 24:
+                            flags.append((3, f"Role at {role.get('company', '?')}: claims {dur_months}mo but dates span only {actual_months}mo"))
+                        elif ratio > 1.8 and dur_months > 12:
+                            flags.append((2, f"Role at {role.get('company', '?')}: claims {dur_months}mo but dates span only {actual_months}mo (ratio {ratio:.1f}x)"))
 
         # ── HARD FLAG 3: Career duration exceeds time since start date ──
         if isinstance(career, list):
@@ -94,11 +100,12 @@ class HoneypotDetector:
                     continue
                 start = _parse_date(role.get("start_date"))
                 dur_months = role.get("duration_months", 0)
-                if start and dur_months > 24:
+                if start and dur_months >= 12:
                     today = date.today()
                     months_available = (today.year - start.year) * 12 + (today.month - start.month)
                     if dur_months > months_available + 3:
-                        flags.append((3, f"Role at {role.get('company', '?')}: claims {dur_months}mo but only {months_available}mo since start"))
+                        severity = 3 if dur_months > months_available + 12 else 2
+                        flags.append((severity, f"Role at {role.get('company', '?')}: claims {dur_months}mo but only {months_available}mo since start"))
 
         # ── HARD FLAG 4: End date before start date ──
         if isinstance(career, list):
@@ -132,8 +139,24 @@ class HoneypotDetector:
                 long_overlaps += overlap_days > 365
         if long_overlaps >= 2:
             flags.append((3, f"{long_overlaps} career-role overlaps longer than one year"))
+        elif long_overlaps == 1:
+            flags.append((2, f"{long_overlaps} career-role overlap longer than one year"))
 
 
+
+        # ── HARD FLAG 5: Impossible startup founding dates ──
+        if isinstance(career, list):
+            impossible_startups = {
+                "Sarvam AI": date(2023, 1, 1),
+                "Krutrim": date(2023, 1, 1),
+            }
+            for role in career:
+                if not isinstance(role, dict):
+                    continue
+                company = role.get("company")
+                start = _parse_date(role.get("start_date"))
+                if company in impossible_startups and start and start < impossible_startups[company]:
+                    flags.append((3, f"Role at {company} started in {start.year} but company was founded in {impossible_startups[company].year}"))
 
         # ── MEDIUM FLAG 6: All skills uniform expert + 0 months ──
         if isinstance(skills, list) and len(skills) >= 8:
@@ -147,8 +170,12 @@ class HoneypotDetector:
             total_career_months = sum(
                 r.get("duration_months", 0) for r in career if isinstance(r, dict)
             )
-            if exp_years > 0 and total_career_months > exp_years * 12 * 3:
-                flags.append((2, f"Career total={total_career_months}mo vs claimed {exp_years}yrs"))
+            if exp_years > 0:
+                ratio = total_career_months / (exp_years * 12)
+                if ratio > 3.0:
+                    flags.append((2, f"Career total={total_career_months}mo vs claimed {exp_years}yrs ({ratio:.1f}x)"))
+                elif ratio > 1.8:
+                    flags.append((1, f"Career total={total_career_months}mo vs claimed {exp_years}yrs ({ratio:.1f}x) — mild inflation"))
 
         # Compute severity
         severity = sum(s for s, _ in flags)
