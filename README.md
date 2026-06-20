@@ -99,7 +99,7 @@ python precompute.py --candidates data/raw/candidates.jsonl --out data/processed
 ### 3. Rank and Generate Submission
 
 ```bash
-python rank.py --candidates ./candidates.jsonl --out ./submission.csv
+python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/candidates_cache.pkl --out submission.csv
 ```
 *This loads the cache, compares candidates against the hackathon JD, computes all 12 Redrob signals, runs the Honeypot Detector, generates reasoning, and outputs a 100-row `submission.csv`.*
 

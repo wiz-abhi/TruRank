@@ -71,7 +71,7 @@ methodology_summary: |
     - Product-vs-services fit (boosts SaaS/product, penalises services-only)
     - Location fit (Pune/Noida preference, relocation awareness)
     - Work-mode compatibility, culture fit
-  A bounded (0.65–1.25) behavioral multiplier uses 12 Redrob signals (notice period,
+  A bounded (0.65–1.0) behavioral multiplier uses 12 Redrob signals (notice period,
   GitHub score, response rate, profile completeness, interview completion, etc.).
   Hard penalties applied for services-only careers (90%) and unrelated titles (70%).
   Profile trust scoring penalises expert claims with zero months of usage.
