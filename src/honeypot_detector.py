@@ -41,7 +41,7 @@ class HoneypotDetector:
     """Detect honeypot candidates with impossible profile contradictions."""
 
     # Severity threshold: candidates at or above this are classified as honeypots
-    HONEYPOT_THRESHOLD = 5
+    HONEYPOT_THRESHOLD = 3
 
     def detect(self, raw: Dict[str, Any]) -> HoneypotResult:
         """Analyze a single raw candidate dict for honeypot signals.
@@ -133,17 +133,7 @@ class HoneypotDetector:
         if long_overlaps >= 2:
             flags.append((3, f"{long_overlaps} career-role overlaps longer than one year"))
 
-        # ── HARD FLAG 5: Experience years impossible given graduation ──
-        if isinstance(education, list) and education:
-            latest_grad = max(
-                (e.get("end_year", 0) for e in education if isinstance(e, dict)),
-                default=0,
-            )
-            if latest_grad >= 2020:
-                years_since_grad = date.today().year - latest_grad
-                # Truly impossible: claims more than 2x the time since graduation
-                if exp_years > years_since_grad * 2 and exp_years > 8:
-                    flags.append((3, f"{exp_years}yrs exp but graduated {latest_grad} ({years_since_grad}yrs ago)"))
+
 
         # ── MEDIUM FLAG 6: All skills uniform expert + 0 months ──
         if isinstance(skills, list) and len(skills) >= 8:
