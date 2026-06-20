@@ -17,17 +17,28 @@ def run_precompute(input_path: str, output_path: str, batch_size: int = 512):
 
     profiles = []
 
-    print("Reading and parsing JSONL...")
+    print(f"Reading and parsing {input_path}...")
     with open(input_path, "r", encoding="utf-8") as f:
-        for line in tqdm(f):
-            if not line.strip():
-                continue
-            try:
-                raw_dict = json.loads(line)
-                profile = parser.parse(raw_dict)
-                profiles.append(profile)
-            except Exception as e:
-                print(f"Error parsing line: {e}")
+        if str(input_path).endswith(".jsonl"):
+            for line in tqdm(f):
+                if not line.strip():
+                    continue
+                try:
+                    raw_dict = json.loads(line)
+                    profile = parser.parse(raw_dict)
+                    profiles.append(profile)
+                except Exception as e:
+                    print(f"Error parsing line: {e}")
+        else:
+            data = json.load(f)
+            if not isinstance(data, list):
+                data = [data]
+            for raw_dict in tqdm(data):
+                try:
+                    profile = parser.parse(raw_dict)
+                    profiles.append(profile)
+                except Exception as e:
+                    print(f"Error parsing item: {e}")
 
     print(f"Parsed {len(profiles)} profiles in {time.time() - start_time:.2f}s")
 
@@ -59,6 +70,9 @@ def run_precompute(input_path: str, output_path: str, batch_size: int = 512):
 
 
 if __name__ == "__main__":
-    input_file = "data/raw/candidates.jsonl"
-    output_file = "data/processed/candidates_cache.pkl"
-    run_precompute(input_file, output_file)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--candidates", type=str, default="data/raw/candidates.jsonl")
+    parser.add_argument("--out", type=str, default="data/processed/candidates_cache.pkl")
+    args = parser.parse_args()
+    run_precompute(args.candidates, args.out)

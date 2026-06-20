@@ -22,7 +22,7 @@ team_members:
 # Code and reproducibility
 # ============================================================================
 github_repo: "https://github.com/wiz-abhi/indiaruns"
-sandbox_link: "https://github.com/wiz-abhi/indiaruns"
+sandbox_link: "https://india-runs-hack.streamlit.app"
 
 reproduce_command: "python rank.py"
 

@@ -135,7 +135,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--out", type=str, default="submission.csv", help="Output CSV path"
     )
+    parser.add_argument(
+        "--cache", type=str, default="data/processed/candidates_cache.pkl", help="Input cache file"
+    )
     args = parser.parse_args()
 
-    cache_path = "data/processed/candidates_cache.pkl"
-    run_ranking(cache_path, args.out)
+    run_ranking(args.cache, args.out)
