@@ -8,6 +8,8 @@ Run with:
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import sys
 from pathlib import Path
@@ -15,15 +17,17 @@ from pathlib import Path
 # Ensure project root on import path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
+from sentence_transformers import SentenceTransformer
 
-from src.embeddings import EmbeddingEngine
-from src.jd_parser import JDParser
-from src.profile_parser import ProfileParser
-from src.ranker import CandidateRanker, RankedCandidate
-from src.utils import OUTPUTS_DIR, ensure_dir
+from src.jd_parser import JobDescription
+from src.profile_parser import ProfileParser, CandidateProfile
+from src.signals import SignalComputer, SignalScores
+from src.explainer import ExplainerEngine
+from src.honeypot_detector import HoneypotDetector
+from src.utils import load_config
 
 # ── Page config ──────────────────────────────────────────────────────────
 st.set_page_config(
@@ -39,7 +43,6 @@ st.markdown(
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global */
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
@@ -47,7 +50,7 @@ st.markdown(
         background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 40%, #24243e 100%);
     }
 
-    /* Header */
+    /* Hero */
     .hero-title {
         font-size: 2.6rem;
         font-weight: 800;
@@ -62,7 +65,7 @@ st.markdown(
         margin-top: -0.5rem;
     }
 
-    /* Cards */
+    /* Metric cards */
     .metric-card {
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.1);
@@ -87,7 +90,7 @@ st.markdown(
         letter-spacing: 0.5px;
     }
 
-    /* Candidate row */
+    /* Candidate card */
     .candidate-card {
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.08);
@@ -99,6 +102,15 @@ st.markdown(
     .candidate-card:hover {
         background: rgba(255,255,255,0.07);
         border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    /* Honeypot card (red tint) */
+    .honeypot-card {
+        background: rgba(255,50,50,0.06);
+        border: 1px solid rgba(255,80,80,0.25);
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 0.6rem;
     }
 
     /* Rank badges */
@@ -144,12 +156,26 @@ st.markdown(
         margin-right: 6px;
         margin-top: 4px;
     }
-
-    /* Flag */
-    .flag-note {
+    .warning-tag {
+        display: inline-block;
+        background: rgba(255, 107, 107, 0.15);
         color: #ff6b6b;
-        font-size: 0.8rem;
-        font-style: italic;
+        font-size: 0.78rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-right: 6px;
+        margin-top: 4px;
+    }
+    .honeypot-tag {
+        display: inline-block;
+        background: rgba(255, 50, 50, 0.2);
+        color: #ff4444;
+        font-size: 0.78rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-right: 6px;
+        margin-top: 4px;
+        font-weight: 600;
     }
 
     /* Signal bars */
@@ -159,7 +185,7 @@ st.markdown(
         margin-bottom: 4px;
     }
     .signal-label {
-        width: 130px;
+        width: 150px;
         font-size: 0.75rem;
         color: #8888aa;
     }
@@ -182,13 +208,13 @@ st.markdown(
         margin-left: 8px;
     }
 
-    /* Sidebar styling */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
         background: rgba(15,12,41,0.95) !important;
         border-right: 1px solid rgba(255,255,255,0.08);
     }
 
-    /* How it works */
+    /* Info sections */
     .how-section {
         background: rgba(255,255,255,0.03);
         border: 1px solid rgba(255,255,255,0.08);
@@ -206,7 +232,6 @@ st.markdown(
 
 # ── Helper functions ─────────────────────────────────────────────────────
 def _rank_badge(rank: int) -> str:
-    """Return HTML for a rank badge."""
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     cls = f"rank-{rank}" if rank <= 3 else "rank-n"
     label = medals.get(rank, str(rank))
@@ -214,7 +239,6 @@ def _rank_badge(rank: int) -> str:
 
 
 def _match_bar(pct: int) -> str:
-    """Return HTML for a match percentage progress bar."""
     return f"""
     <div style="display:flex;align-items:center;gap:8px;">
         <div class="match-bar-bg"><div class="match-bar-fill" style="width:{pct}%"></div></div>
@@ -224,8 +248,7 @@ def _match_bar(pct: int) -> str:
 
 
 def _signal_bar(label: str, value: float, color: str = "#667eea") -> str:
-    """Return HTML for a single signal bar."""
-    pct = int(value * 100)
+    pct = int(max(0, min(100, value * 100)))
     return f"""
     <div class="signal-row">
         <span class="signal-label">{label}</span>
@@ -237,295 +260,376 @@ def _signal_bar(label: str, value: float, color: str = "#667eea") -> str:
     """
 
 
-SIGNAL_COLORS = {
-    "semantic_similarity": "#667eea",
-    "skill_match": "#764ba2",
-    "skill_recency": "#f093fb",
-    "experience_fit": "#43e97b",
-    "career_velocity": "#38f9d7",
-    "domain_alignment": "#fa709a",
-    "profile_freshness": "#fee140",
-    "culture_fit": "#30cfd0",
-    "education_tier_bonus": "#a18cd1",
-}
-
-SIGNAL_LABELS = {
-    "semantic_similarity": "Semantic Match",
-    "skill_match": "Skill Match",
-    "skill_recency": "Skill Recency",
-    "experience_fit": "Experience Fit",
-    "career_velocity": "Career Velocity",
-    "domain_alignment": "Domain Align",
-    "profile_freshness": "Freshness",
-    "culture_fit": "Culture Fit",
-    "education_tier_bonus": "Education Bonus",
+# Signal display configuration — matches current architecture
+SIGNAL_CONFIG = {
+    "career_evidence":    {"label": "Career Evidence",    "color": "#43e97b"},
+    "semantic_similarity":{"label": "Semantic Match",     "color": "#667eea"},
+    "skill_evidence":     {"label": "Skill Evidence",     "color": "#764ba2"},
+    "skill_match":        {"label": "Skill Match",        "color": "#f093fb"},
+    "experience_fit":     {"label": "Experience Fit",     "color": "#38f9d7"},
+    "career_stability":   {"label": "Career Stability",   "color": "#fee140"},
+    "product_company_fit":{"label": "Product Co. Fit",    "color": "#fa709a"},
+    "domain_alignment":   {"label": "Domain Alignment",   "color": "#30cfd0"},
+    "location_fit":       {"label": "Location Fit",       "color": "#a18cd1"},
+    "culture_fit":        {"label": "Culture Fit",        "color": "#ffecd2"},
+    "skill_recency":      {"label": "Skill Depth",        "color": "#fcb69f"},
+    "work_mode_fit":      {"label": "Work Mode Fit",      "color": "#84fab0"},
+    "profile_trust":      {"label": "Profile Trust",      "color": "#ff6b6b"},
 }
 
 
-# ── Cache shared resources ───────────────────────────────────────────────
+# ── Cached model loading ────────────────────────────────────────────────
 @st.cache_resource
-def get_engine() -> EmbeddingEngine:
-    return EmbeddingEngine()
-
-
-@st.cache_resource
-def get_ranker() -> CandidateRanker:
-    return CandidateRanker(embedding_engine=get_engine())
+def load_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 # ── SIDEBAR ──────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### 🇮🇳 IndiaRanks")
+    st.markdown(
+        '<span style="color:#8888aa;font-size:0.8rem;">Evidence-First Candidate Ranking</span>',
+        unsafe_allow_html=True,
+    )
     st.markdown("---")
 
-    jd_mode = st.radio(
-        "Job Description Input",
-        ["📝 Paste text", "📂 Upload JSON", "📄 Use sample JD"],
-        index=2,
-        key="jd_mode",
+    st.markdown("**📂 Candidate Data**")
+    uploaded = st.file_uploader(
+        "Upload candidates (JSONL or JSON)",
+        type=["jsonl", "json"],
+        key="candidates_upload",
     )
 
-    jd_text = ""
-    if jd_mode == "📝 Paste text":
-        jd_text = st.text_area(
-            "Paste JD here",
-            height=200,
-            placeholder="Senior Machine Learning Engineer at…",
-        )
-    elif jd_mode == "📂 Upload JSON":
-        uploaded_jd = st.file_uploader("Upload JD (JSON)", type=["json"])
-        if uploaded_jd:
-            jd_text = json.loads(uploaded_jd.read().decode("utf-8"))
-    else:
-        sample_path = Path(__file__).parent.parent / "data" / "sample" / "jd.json"
-        if sample_path.exists():
-            with open(sample_path, "r", encoding="utf-8") as f:
-                jd_text = json.load(f)
-            st.success("Using sample JD ✓")
-        else:
-            st.warning("Sample JD not found — paste or upload.")
-
     st.markdown("---")
-
-    profile_mode = st.radio(
-        "Candidate Profiles",
-        ["📂 Upload CSV", "📄 Use sample profiles"],
-        index=1,
-        key="prof_mode",
-    )
-
-    profiles_df = None
-    if profile_mode == "📂 Upload CSV":
-        uploaded = st.file_uploader("Upload Profiles (CSV)", type=["csv", "xlsx", "json"])
-        if uploaded:
-            suffix = uploaded.name.split(".")[-1].lower()
-            if suffix == "csv":
-                profiles_df = pd.read_csv(uploaded)
-            elif suffix in ("xlsx", "xls"):
-                profiles_df = pd.read_excel(uploaded)
-            elif suffix == "json":
-                profiles_df = pd.DataFrame(json.loads(uploaded.read().decode("utf-8")))
-    else:
-        sample_profiles = Path(__file__).parent.parent / "data" / "sample" / "profiles.csv"
-        if sample_profiles.exists():
-            profiles_df = pd.read_csv(sample_profiles)
-            st.success(f"Loaded {len(profiles_df)} sample profiles ✓")
-
-    st.markdown("---")
-
-    num_show = st.slider("Candidates to show", 5, 50, 10, key="num_show")
+    num_show = st.slider("Top candidates to show", 5, 100, 15, key="num_show")
     show_signals = st.toggle("Show signal breakdown", value=True, key="show_signals")
+    show_honeypots = st.toggle("Show detected honeypots", value=True, key="show_honeypots")
 
+    st.markdown("---")
     run_btn = st.button("🚀 Rank Candidates", use_container_width=True, type="primary")
 
 
 # ── MAIN PANEL ───────────────────────────────────────────────────────────
 st.markdown('<h1 class="hero-title">IndiaRanks</h1>', unsafe_allow_html=True)
 st.markdown(
-    '<p class="hero-subtitle">Intelligent Candidate Ranking · Powered by Semantic AI + India-Native Signals</p>',
+    '<p class="hero-subtitle">Evidence-First Candidate Ranking · Semantic AI + Honeypot Detection + Behavioral Signals</p>',
     unsafe_allow_html=True,
 )
 
-if run_btn and jd_text and profiles_df is not None:
-    with st.spinner("⚡ Running ranking pipeline…"):
-        jd_parser = JDParser()
-        jd = jd_parser.parse(jd_text)
+if run_btn and uploaded is not None:
+    # Parse uploaded candidates
+    raw_candidates = []
+    content = uploaded.read().decode("utf-8")
+    if uploaded.name.endswith(".jsonl"):
+        for line in content.strip().split("\n"):
+            if line.strip():
+                raw_candidates.append(json.loads(line))
+    else:
+        data = json.loads(content)
+        raw_candidates = data if isinstance(data, list) else [data]
 
-        profile_parser = ProfileParser()
-        raw_records = profiles_df.to_dict(orient="records")
-        profiles = profile_parser.parse_many(raw_records)
+    if not raw_candidates:
+        st.error("No candidates found in the uploaded file.")
+        st.stop()
 
-        ranker = get_ranker()
-        ranked = ranker.rank(profiles, jd, refresh_embeddings=True)
-        ranked = ranked[:num_show]
+    with st.spinner("⚡ Running full ranking pipeline…"):
+        # 1. Setup
+        cfg = load_config()
+        target_jd_cfg = cfg.get("target_jd", {})
+        jd = JobDescription(
+            raw_text="Target Hackathon JD",
+            required_skills=target_jd_cfg.get("required_skills", []),
+            preferred_skills=target_jd_cfg.get("preferred_skills", []),
+            min_experience_years=target_jd_cfg.get("min_experience", 5),
+            domain=target_jd_cfg.get("domain", "data_science"),
+            culture_signals=target_jd_cfg.get("culture_signals", []),
+        )
 
-    # ── JD Summary Card ──────────────────────────────────────────────
+        # 2. Parse profiles
+        parser = ProfileParser()
+        profiles = parser.parse_many(raw_candidates)
+
+        # 3. Compute embeddings
+        model = load_model()
+        jd_embedding_text = (
+            "Senior applied AI engineer who has shipped production retrieval, ranking, "
+            "recommendation or search systems to real users. Evidence of evaluation with "
+            "NDCG, MRR, MAP or A/B tests; strong Python and product ownership. Skills: "
+            + ", ".join(jd.required_skills)
+        )
+        jd_emb = model.encode(jd_embedding_text, normalize_embeddings=True)
+        profile_texts = [p.to_embedding_text() for p in profiles]
+        profile_embs = model.encode(profile_texts, normalize_embeddings=True, show_progress_bar=False)
+
+        # 4. Semantic similarity
+        jd_norm = np.asarray(jd_emb, dtype=np.float32)
+        prof_norms = np.asarray(profile_embs, dtype=np.float32)
+        semantic_scores = prof_norms @ jd_norm
+
+        # 5. Compute signals
+        computer = SignalComputer()
+        explainer = ExplainerEngine()
+        detector = HoneypotDetector()
+
+        scored = []
+        honeypots_detected = []
+
+        for i, profile in enumerate(profiles):
+            sim = float(semantic_scores[i])
+            scores = computer.compute_all(profile, jd, sim)
+            hp_result = detector.detect(profile.raw)
+
+            if hp_result.is_honeypot:
+                honeypots_detected.append((profile, hp_result, scores))
+            else:
+                reasoning = explainer.explain_rank(profile, scores, jd)
+                scored.append((scores.composite_score, profile, scores, reasoning))
+
+        # Sort by score descending
+        scored.sort(key=lambda x: (-x[0], x[1].candidate_id))
+        top_n = scored[:num_show]
+
+    # ── Summary Metrics ──────────────────────────────────────────────
     st.markdown("---")
-    st.markdown("### 📋 Parsed Job Description")
-    cols = st.columns(4)
+    cols = st.columns(5)
     with cols[0]:
         st.markdown(
-            f'<div class="metric-card"><div class="metric-value">{jd.seniority_level.title()}</div>'
-            f'<div class="metric-label">Seniority</div></div>',
+            f'<div class="metric-card"><div class="metric-value">{len(profiles)}</div>'
+            f'<div class="metric-label">Total Candidates</div></div>',
             unsafe_allow_html=True,
         )
     with cols[1]:
         st.markdown(
-            f'<div class="metric-card"><div class="metric-value">{jd.min_experience_years:.0f}+ yrs</div>'
-            f'<div class="metric-label">Min Experience</div></div>',
+            f'<div class="metric-card"><div class="metric-value">{len(honeypots_detected)}</div>'
+            f'<div class="metric-label">Honeypots Caught</div></div>',
             unsafe_allow_html=True,
         )
     with cols[2]:
         st.markdown(
-            f'<div class="metric-card"><div class="metric-value">{jd.domain.replace("_", " ").title()}</div>'
-            f'<div class="metric-label">Domain</div></div>',
+            f'<div class="metric-card"><div class="metric-value">{len(scored)}</div>'
+            f'<div class="metric-label">Valid Candidates</div></div>',
             unsafe_allow_html=True,
         )
     with cols[3]:
+        top_score = top_n[0][0] if top_n else 0
         st.markdown(
-            f'<div class="metric-card"><div class="metric-value">{jd.location_preference or "Any"}</div>'
-            f'<div class="metric-label">Location</div></div>',
+            f'<div class="metric-card"><div class="metric-value">{top_score:.4f}</div>'
+            f'<div class="metric-label">Top Score</div></div>',
+            unsafe_allow_html=True,
+        )
+    with cols[4]:
+        hp_pct = (len(honeypots_detected) / max(len(profiles), 1)) * 100
+        st.markdown(
+            f'<div class="metric-card"><div class="metric-value">{hp_pct:.1f}%</div>'
+            f'<div class="metric-label">Honeypot Rate</div></div>',
             unsafe_allow_html=True,
         )
 
-    # Skills
-    col_req, col_pref = st.columns(2)
-    with col_req:
+    # ── JD Summary ───────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 📋 Target Job Description")
+    jd_cols = st.columns(3)
+    with jd_cols[0]:
         st.markdown("**Required Skills**")
-        if jd.required_skills:
-            st.markdown(" · ".join([f"`{s}`" for s in jd.required_skills]))
-    with col_pref:
+        st.markdown(" · ".join([f"`{s}`" for s in jd.required_skills[:12]]))
+    with jd_cols[1]:
         st.markdown("**Preferred Skills**")
-        if jd.preferred_skills:
-            st.markdown(" · ".join([f"`{s}`" for s in jd.preferred_skills]))
-
-    if jd.culture_signals:
-        st.markdown(
-            "**Culture Signals:** "
-            + " · ".join([f"`{s}`" for s in jd.culture_signals])
-        )
+        st.markdown(" · ".join([f"`{s}`" for s in jd.preferred_skills]))
+    with jd_cols[2]:
+        st.markdown(f"**Experience:** {jd.min_experience_years:.0f}+ years")
+        st.markdown(f"**Domain:** {jd.domain.replace('_', ' ').title()}")
+        st.markdown(f"**Culture:** {', '.join(jd.culture_signals)}")
 
     # ── Ranked Candidates ────────────────────────────────────────────
     st.markdown("---")
-    st.markdown(f"### 🏆 Top {len(ranked)} Ranked Candidates")
+    st.markdown(f"### 🏆 Top {len(top_n)} Ranked Candidates")
 
-    for c in ranked:
-        with st.container():
-            badge = _rank_badge(c.rank)
-            bar = _match_bar(c.match_percentage)
+    max_score = top_n[0][0] if top_n else 1.0
 
-            # Build HTML card
-            reasons_html = "".join(
-                [f'<span class="reason-tag">{r[:80]}</span>' for r in c.top_3_reasons[:3]]
-            )
-            flags_html = (
-                f'<div class="flag-note">⚠ {c.flag_notes}</div>' if c.flag_notes else ""
+    for rank_idx, (score, profile, scores, reasoning) in enumerate(top_n, start=1):
+        badge = _rank_badge(rank_idx)
+        norm_pct = int((score / max_score) * 100) if max_score > 0 else 0
+        bar = _match_bar(norm_pct)
+
+        title = profile.job_titles[0] if profile.job_titles else "Professional"
+        company = profile.companies[0] if profile.companies else ""
+        loc = profile.location or ""
+
+        # Build reason tags from reasoning text
+        reasoning_clean = reasoning.replace("\n", " ").strip()
+
+        # Determine warning tags
+        warning_html = ""
+        if scores.profile_trust < 0.7:
+            warning_html += '<span class="warning-tag">⚠ Low profile trust</span>'
+        if scores.career_stability < 0.4:
+            warning_html += '<span class="warning-tag">⚠ Unstable career</span>'
+        if scores.behavioral_multiplier < 0.8:
+            warning_html += '<span class="warning-tag">⚠ Low activity</span>'
+
+        loc_html = f' · 📍 {loc}' if loc else ''
+
+        st.markdown(
+            f"""
+            <div class="candidate-card">
+                <div style="display:flex;align-items:center;margin-bottom:8px;">
+                    {badge}
+                    <div style="flex:1;">
+                        <div style="color:#fff;font-weight:600;font-size:1.05rem;">{title} at {company}</div>
+                        <div style="color:#8888aa;font-size:0.8rem;">
+                            {profile.candidate_id} · {profile.experience_years:.1f} yrs exp{loc_html}
+                        </div>
+                    </div>
+                    <div style="width:180px;">{bar}</div>
+                </div>
+                <div style="color:#c0c0d8;font-size:0.82rem;margin-bottom:6px;">{reasoning_clean}</div>
+                {warning_html}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if show_signals:
+            with st.expander(f"📊 Signal Breakdown — {profile.candidate_id}", expanded=False):
+                scores_dict = scores.to_dict()
+
+                # Signal bars
+                signal_html = ""
+                for key, cfg_item in SIGNAL_CONFIG.items():
+                    val = scores_dict.get(key, 0)
+                    signal_html += _signal_bar(cfg_item["label"], val, cfg_item["color"])
+
+                # Behavioral multiplier (displayed separately)
+                bm = scores_dict.get("behavioral_multiplier", 1.0)
+                bm_color = "#43e97b" if bm >= 1.0 else "#ff6b6b"
+                signal_html += f"""
+                <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);">
+                    <div class="signal-row">
+                        <span class="signal-label" style="font-weight:600;">Behavioral ×</span>
+                        <div class="signal-bar-bg">
+                            <div class="signal-bar-fill" style="width:{int(bm/1.25*100)}%;background:{bm_color};"></div>
+                        </div>
+                        <span class="signal-val" style="font-weight:600;">{bm:.2f}×</span>
+                    </div>
+                </div>
+                """
+                st.markdown(signal_html, unsafe_allow_html=True)
+
+                # Radar chart
+                labels = [v["label"] for v in SIGNAL_CONFIG.values()]
+                values = [scores_dict.get(k, 0) for k in SIGNAL_CONFIG.keys()]
+                values_closed = values + [values[0]]
+                labels_closed = labels + [labels[0]]
+
+                fig = go.Figure()
+                fig.add_trace(go.Scatterpolar(
+                    r=values_closed,
+                    theta=labels_closed,
+                    fill="toself",
+                    fillcolor="rgba(102, 126, 234, 0.15)",
+                    line=dict(color="#667eea", width=2),
+                    marker=dict(size=5, color="#764ba2"),
+                ))
+                fig.update_layout(
+                    polar=dict(
+                        bgcolor="rgba(0,0,0,0)",
+                        radialaxis=dict(
+                            visible=True,
+                            range=[0, 1],
+                            tickfont=dict(size=9, color="#666"),
+                            gridcolor="rgba(255,255,255,0.08)",
+                        ),
+                        angularaxis=dict(
+                            tickfont=dict(size=10, color="#a0a0c0"),
+                            gridcolor="rgba(255,255,255,0.08)",
+                        ),
+                    ),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    margin=dict(l=60, r=60, t=20, b=20),
+                    height=320,
+                    showlegend=False,
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+    # ── Honeypot Analysis Panel ──────────────────────────────────────
+    if show_honeypots and honeypots_detected:
+        st.markdown("---")
+        st.markdown(f"### 🍯 Honeypots Detected ({len(honeypots_detected)})")
+        st.markdown(
+            '<span style="color:#a0a0c0;font-size:0.85rem;">'
+            "These candidates have impossible profile contradictions and were excluded from the ranking."
+            "</span>",
+            unsafe_allow_html=True,
+        )
+
+        for profile, hp_result, scores in honeypots_detected:
+            title = profile.job_titles[0] if profile.job_titles else "Unknown"
+            company = profile.companies[0] if profile.companies else "Unknown"
+            flags_html = "".join(
+                f'<span class="honeypot-tag">🚩 {flag}</span>' for flag in hp_result.flags
             )
 
             st.markdown(
                 f"""
-                <div class="candidate-card">
+                <div class="honeypot-card">
                     <div style="display:flex;align-items:center;margin-bottom:8px;">
-                        {badge}
+                        <span class="rank-badge" style="background:rgba(255,50,50,0.3);color:#ff4444;">🍯</span>
                         <div style="flex:1;">
-                            <div style="color:#fff;font-weight:600;font-size:1.05rem;">{c.name}</div>
-                            <div style="color:#8888aa;font-size:0.8rem;">ID: {c.candidate_id} · {c.experience_years:.1f} yrs exp</div>
+                            <div style="color:#ff8888;font-weight:600;font-size:1rem;">{title} at {company}</div>
+                            <div style="color:#aa6666;font-size:0.8rem;">
+                                {profile.candidate_id} · Severity: {hp_result.severity} · {profile.experience_years:.1f} yrs claimed
+                            </div>
                         </div>
-                        <div style="width:180px;">{bar}</div>
                     </div>
-                    <div>{reasons_html}</div>
-                    {flags_html}
+                    <div>{flags_html}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            if show_signals:
-                with st.expander(f"📊 Signal breakdown — {c.name}", expanded=False):
-                    signals = c.signal_scores
-                    signal_html = ""
-                    for key in [
-                        "semantic_similarity", "skill_match", "skill_recency",
-                        "experience_fit", "career_velocity", "domain_alignment",
-                        "profile_freshness", "culture_fit", "education_tier_bonus",
-                    ]:
-                        val = signals.get(key, 0)
-                        color = SIGNAL_COLORS.get(key, "#667eea")
-                        label = SIGNAL_LABELS.get(key, key)
-                        signal_html += _signal_bar(label, val, color)
-
-                    st.markdown(signal_html, unsafe_allow_html=True)
-
-                    # Plotly radar chart
-                    categories = list(SIGNAL_LABELS.values())
-                    values = [signals.get(k, 0) for k in SIGNAL_LABELS.keys()]
-                    values.append(values[0])  # close the polygon
-                    categories.append(categories[0])
-
-                    fig = go.Figure()
-                    fig.add_trace(go.Scatterpolar(
-                        r=values,
-                        theta=categories,
-                        fill="toself",
-                        fillcolor="rgba(102, 126, 234, 0.15)",
-                        line=dict(color="#667eea", width=2),
-                        marker=dict(size=5, color="#764ba2"),
-                    ))
-                    fig.update_layout(
-                        polar=dict(
-                            bgcolor="rgba(0,0,0,0)",
-                            radialaxis=dict(
-                                visible=True,
-                                range=[0, 1],
-                                tickfont=dict(size=9, color="#666"),
-                                gridcolor="rgba(255,255,255,0.08)",
-                            ),
-                            angularaxis=dict(
-                                tickfont=dict(size=10, color="#a0a0c0"),
-                                gridcolor="rgba(255,255,255,0.08)",
-                            ),
-                        ),
-                        paper_bgcolor="rgba(0,0,0,0)",
-                        plot_bgcolor="rgba(0,0,0,0)",
-                        margin=dict(l=50, r=50, t=20, b=20),
-                        height=300,
-                        showlegend=False,
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-
-    # ── Download button ──────────────────────────────────────────────
+    # ── Download submission CSV ──────────────────────────────────────
     st.markdown("---")
-    csv_path = ensure_dir(OUTPUTS_DIR) / "ranked_output.csv"
-    CandidateRanker.export_csv(ranked, csv_path)
-    with open(csv_path, "r", encoding="utf-8") as f:
-        csv_data = f.read()
+    csv_buffer = io.StringIO()
+    writer = csv.DictWriter(csv_buffer, fieldnames=["candidate_id", "rank", "score", "reasoning"])
+    writer.writeheader()
+    for rank_idx, (score, profile, scores, reasoning) in enumerate(scored[:100], start=1):
+        writer.writerow({
+            "candidate_id": profile.candidate_id,
+            "rank": rank_idx,
+            "score": f"{score / max_score:.6f}" if max_score > 0 else "0.000000",
+            "reasoning": reasoning.replace("\n", " ").strip(),
+        })
     st.download_button(
-        label="📥 Download ranked_output.csv",
-        data=csv_data,
-        file_name="ranked_output.csv",
+        label="📥 Download submission.csv",
+        data=csv_buffer.getvalue(),
+        file_name="submission.csv",
         mime="text/csv",
         use_container_width=True,
     )
 
-    # ── How this works ───────────────────────────────────────────────
+    # ── How This Works ───────────────────────────────────────────────
     st.markdown(
         """
         <div class="how-section">
             <h3>🔬 How This Works</h3>
             <p>
-            This system goes beyond keyword matching by combining <b>semantic embeddings</b>
-            (sentence-transformers) with <b>9 distinct ranking signals</b> tailored for the
-            Indian job market. Each candidate is scored on semantic relevance to the JD,
-            hard + soft skill match using an India-specific synonym dictionary, experience
-            fit, career velocity, education tier (IIT/NIT/BITS awareness), profile freshness,
-            domain alignment, and cultural fit (startup vs enterprise company background).
+            This system uses <b>evidence-first semantic embeddings</b> — career descriptions
+            are prioritized over self-declared skill lists to defeat keyword stuffing.
+            Each candidate is scored across <b>12 weighted signals</b> including career evidence
+            (production retrieval/ranking systems), skill claim validation (duration, proficiency,
+            assessments), career stability (penalizing title-chasing), and product-vs-services fit.
             </p>
             <p>
-            All signals are combined into a weighted composite score with configurable weights.
-            Every ranking decision is <b>explainable</b> — the top 3 reasons are generated
-            using template-based NLG, and flag notes highlight edge cases like over-qualification
-            or stale profiles. The system processes 1,000+ profiles in seconds, ready for
-            India-scale deployment.
+            A <b>bounded behavioral multiplier</b> (0.65×–1.25×) uses Redrob signals like
+            notice period, GitHub activity, response rate, and profile completeness to re-rank
+            technically similar candidates without manufacturing false relevance.
+            </p>
+            <p>
+            The <b>Honeypot Detector</b> catches ~80 impossible profiles using 7 hard/medium
+            flags: expert skills with 0 months usage, career durations exceeding calendar time,
+            future role dates, overlapping full-time roles, and graduation-timeline violations.
+            Submissions with >10% honeypot rate in the top 100 are auto-disqualified.
             </p>
         </div>
         """,
@@ -536,26 +640,50 @@ elif not run_btn:
     # Landing state
     st.markdown("---")
     st.info(
-        "👈 **Configure your inputs** in the sidebar and click **🚀 Rank Candidates** to begin.",
+        "👈 **Upload a JSONL/JSON candidate file** in the sidebar and click "
+        "**🚀 Rank Candidates** to begin.",
         icon="💡",
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown(
-            '<div class="metric-card"><div class="metric-value">9</div>'
-            '<div class="metric-label">Ranking Signals</div></div>',
+            '<div class="metric-card"><div class="metric-value">12</div>'
+            '<div class="metric-label">Weighted Signals</div></div>',
             unsafe_allow_html=True,
         )
     with col2:
         st.markdown(
-            '<div class="metric-card"><div class="metric-value">🧠</div>'
-            '<div class="metric-label">Semantic AI</div></div>',
+            '<div class="metric-card"><div class="metric-value">🍯</div>'
+            '<div class="metric-label">Honeypot Detection</div></div>',
             unsafe_allow_html=True,
         )
     with col3:
+        st.markdown(
+            '<div class="metric-card"><div class="metric-value">🧠</div>'
+            '<div class="metric-label">Evidence-First AI</div></div>',
+            unsafe_allow_html=True,
+        )
+    with col4:
         st.markdown(
             '<div class="metric-card"><div class="metric-value">🇮🇳</div>'
             '<div class="metric-label">India-Native</div></div>',
             unsafe_allow_html=True,
         )
+
+    st.markdown(
+        """
+        <div class="how-section" style="margin-top:1.5rem;">
+            <h3>🏗️ Architecture</h3>
+            <p>
+            <b>Step 1 — Upload:</b> Provide a JSONL or JSON file of candidate profiles.<br>
+            <b>Step 2 — Embed:</b> Profiles are encoded with sentence-transformers (all-MiniLM-L6-v2).<br>
+            <b>Step 3 — Score:</b> 12 weighted signals compute a composite score per candidate.<br>
+            <b>Step 4 — Filter:</b> Honeypot detector removes impossible profiles.<br>
+            <b>Step 5 — Explain:</b> Each candidate receives specific, plain-language reasoning.<br>
+            <b>Step 6 — Download:</b> Export submission.csv ready for the hackathon portal.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
