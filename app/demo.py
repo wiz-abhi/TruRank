@@ -366,7 +366,11 @@ with st.sidebar:
     st.markdown("**📂 Input Data**")
     data_source = st.radio(
         "Choose data source:",
-        ["Use Sample Data (data/raw/sample_candidates.json)", "Upload Candidates JSONL/JSON"],
+        [
+            "Use 100K Pre-computed Dataset (Fastest)",
+            "Use Sample Data (data/raw/sample_candidates.json)",
+            "Upload Candidates JSONL/JSON"
+        ],
         label_visibility="collapsed"
     )
 
@@ -414,10 +418,18 @@ st.markdown("""
 # ── MAIN PIPELINE ────────────────────────────────────────────────────────
 if run_btn:
     raw_candidates = []
+    use_cache = False
+    cache_data = None
     
-    if data_source == "Upload Candidates JSONL/JSON":
+    if data_source == "Use 100K Pre-computed Dataset (Fastest)":
+        cache_path = Path("data/processed/candidates_cache.pkl")
+        if not cache_path.exists():
+            st.error(f"Cache file not found at {cache_path}. Please run precompute.py first.")
+            st.stop()
+        use_cache = True
+    elif data_source == "Upload Candidates JSONL/JSON":
         if uploaded is None:
-            st.error("⚠️ Please upload a JSONL file first, or select 'Use Sample Data'.")
+            st.error("⚠️ Please upload a JSONL file first, or select another data source.")
             st.stop()
         content = uploaded.read().decode("utf-8")
         if uploaded.name.endswith(".jsonl"):
@@ -436,7 +448,7 @@ if run_btn:
             data = json.load(f)
             raw_candidates = data if isinstance(data, list) else [data]
 
-    if not raw_candidates:
+    if not use_cache and not raw_candidates:
         st.error("No candidates found.")
         st.stop()
 
@@ -452,9 +464,17 @@ if run_btn:
             culture_signals=target_jd_cfg.get("culture_signals", []),
         )
 
-        parser = ProfileParser()
-        profiles = parser.parse_many(raw_candidates)
-        detector = HoneypotDetector()
+        if use_cache:
+            import pickle
+            with open(cache_path, "rb") as f:
+                cache_data = pickle.load(f)
+            profiles = cache_data["profiles"]
+            profile_embs = cache_data["embeddings"]
+            detector = HoneypotDetector()
+        else:
+            parser = ProfileParser()
+            profiles = parser.parse_many(raw_candidates)
+            detector = HoneypotDetector()
 
         model = load_model()
         jd_embedding_text = (
@@ -464,11 +484,15 @@ if run_btn:
             + ", ".join(jd.required_skills)
         )
         jd_emb = model.encode(jd_embedding_text, normalize_embeddings=True)
-        profile_texts = [p.to_embedding_text() for p in profiles]
-        profile_embs = model.encode(profile_texts, normalize_embeddings=True, show_progress_bar=False)
-
+        
+        if use_cache:
+            prof_norms = np.asarray(profile_embs, dtype=np.float32)
+        else:
+            profile_texts = [p.to_embedding_text() for p in profiles]
+            profile_embs = model.encode(profile_texts, normalize_embeddings=True, show_progress_bar=False)
+            prof_norms = np.asarray(profile_embs, dtype=np.float32)
+            
         jd_norm = np.asarray(jd_emb, dtype=np.float32)
-        prof_norms = np.asarray(profile_embs, dtype=np.float32)
         semantic_scores = prof_norms @ jd_norm
 
         computer = SignalComputer()
