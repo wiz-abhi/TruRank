@@ -363,13 +363,21 @@ with st.sidebar:
     )
     st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
-    st.markdown("**📂 Upload Candidates**")
-    uploaded = st.file_uploader(
-        "JSONL or JSON file",
-        type=["jsonl", "json"],
-        key="candidates_upload",
-        label_visibility="collapsed",
+    st.markdown("**📂 Input Data**")
+    data_source = st.radio(
+        "Choose data source:",
+        ["Use Sample Data (data/raw/sample_candidates.json)", "Upload Candidates JSONL/JSON"],
+        label_visibility="collapsed"
     )
+
+    uploaded = None
+    if data_source == "Upload Candidates JSONL/JSON":
+        uploaded = st.file_uploader(
+            "JSONL or JSON file",
+            type=["jsonl", "json"],
+            key="candidates_upload",
+            label_visibility="collapsed",
+        )
 
     st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
@@ -404,19 +412,32 @@ st.markdown("""
 
 
 # ── MAIN PIPELINE ────────────────────────────────────────────────────────
-if run_btn and uploaded is not None:
+if run_btn:
     raw_candidates = []
-    content = uploaded.read().decode("utf-8")
-    if uploaded.name.endswith(".jsonl"):
-        for line in content.strip().split("\n"):
-            if line.strip():
-                raw_candidates.append(json.loads(line))
+    
+    if data_source == "Upload Candidates JSONL/JSON":
+        if uploaded is None:
+            st.error("⚠️ Please upload a JSONL file first, or select 'Use Sample Data'.")
+            st.stop()
+        content = uploaded.read().decode("utf-8")
+        if uploaded.name.endswith(".jsonl"):
+            for line in content.strip().split("\n"):
+                if line.strip():
+                    raw_candidates.append(json.loads(line))
+        else:
+            data = json.loads(content)
+            raw_candidates = data if isinstance(data, list) else [data]
     else:
-        data = json.loads(content)
-        raw_candidates = data if isinstance(data, list) else [data]
+        sample_path = Path("data/raw/sample_candidates.json")
+        if not sample_path.exists():
+            st.error(f"Sample data not found at {sample_path}")
+            st.stop()
+        with open(sample_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            raw_candidates = data if isinstance(data, list) else [data]
 
     if not raw_candidates:
-        st.error("No candidates found in the uploaded file.")
+        st.error("No candidates found.")
         st.stop()
 
     with st.spinner("⚡ Running the full ranking pipeline..."):
@@ -433,6 +454,7 @@ if run_btn and uploaded is not None:
 
         parser = ProfileParser()
         profiles = parser.parse_many(raw_candidates)
+        detector = HoneypotDetector()
 
         model = load_model()
         jd_embedding_text = (
@@ -451,7 +473,6 @@ if run_btn and uploaded is not None:
 
         computer = SignalComputer()
         explainer = ExplainerEngine()
-        detector = HoneypotDetector()
 
         scored = []
         honeypots_detected = []
