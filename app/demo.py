@@ -364,24 +364,26 @@ with st.sidebar:
     st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
     st.markdown("**📂 Input Data**")
-    data_source = st.radio(
-        "Choose data source:",
-        [
-            "Use 100K Pre-computed Dataset (Fastest)",
-            "Use Sample Data (data/raw/sample_candidates.json)",
-            "Upload Candidates JSONL/JSON"
-        ],
-        label_visibility="collapsed"
+    
+    uploaded = st.file_uploader(
+        "Upload Candidates JSONL/JSON",
+        type=["jsonl", "json"],
+        key="candidates_upload",
     )
-
-    uploaded = None
-    if data_source == "Upload Candidates JSONL/JSON":
-        uploaded = st.file_uploader(
-            "JSONL or JSON file",
-            type=["jsonl", "json"],
-            key="candidates_upload",
-            label_visibility="collapsed",
+    
+    data_source = "Upload"
+    if not uploaded:
+        st.markdown("<div style='text-align: center; margin: 10px 0; color: #888; font-weight: bold;'>— OR —</div>", unsafe_allow_html=True)
+        
+        fallback_option = st.radio(
+            "Use Built-in Data:",
+            ["100K Pre-computed Dataset (Fastest)", "Small Sample Data"],
+            label_visibility="collapsed"
         )
+        if fallback_option == "100K Pre-computed Dataset (Fastest)":
+            data_source = "100K"
+        else:
+            data_source = "Sample"
 
     st.markdown('<div class="glow-divider"></div>', unsafe_allow_html=True)
 
@@ -421,13 +423,13 @@ if run_btn:
     use_cache = False
     cache_data = None
     
-    if data_source == "Use 100K Pre-computed Dataset (Fastest)":
+    if data_source == "100K":
         cache_path = Path("data/processed/candidates_cache.pkl")
         if not cache_path.exists():
             st.error(f"Cache file not found at {cache_path}. Please run precompute.py first.")
             st.stop()
         use_cache = True
-    elif data_source == "Upload Candidates JSONL/JSON":
+    elif data_source == "Upload":
         if uploaded is None:
             st.error("⚠️ Please upload a JSONL file first, or select another data source.")
             st.stop()
@@ -502,11 +504,23 @@ if run_btn:
         honeypots_detected = []
         all_scores_list = []
 
-        for i, profile in enumerate(profiles):
+        total_candidates = len(profiles)
+        indices_to_score = list(range(total_candidates))
+
+        if total_candidates > 2000:
+            top_k = 2000
+            top_indices = np.argpartition(semantic_scores, -top_k)[-top_k:]
+            indices_to_score = top_indices.tolist()
+
+        for i in indices_to_score:
+            profile = profiles[i]
             sim = float(semantic_scores[i])
             scores = computer.compute_all(profile, jd, sim)
-            hp_result = detector.detect(profile.raw)
             all_scores_list.append(scores.composite_score)
+            
+            # For UI logic, if we want to show honeypots, we need to check them.
+            # We check the top ones based on semantic score or we just check them all in the shortlist.
+            hp_result = detector.detect(profile.raw)
 
             if hp_result.is_honeypot:
                 honeypots_detected.append((profile, hp_result, scores))
