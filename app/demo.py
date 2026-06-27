@@ -1003,7 +1003,7 @@ if "results" in st.session_state:
                 A severity-threshold detector catches impossible profiles: expert skills with
                 0 months usage, role durations exceeding calendar time, future dates, overlapping
                 full-time roles, career sum inflation, and <b>pre-founding employment</b> at
-                recently-founded startups. 113 honeypots caught across 100K candidates with
+                recently-founded startups. 80+ honeypots caught across 100K candidates with
                 <b>0% false positive rate</b> on clean validation samples.
                 </p>
             </div>

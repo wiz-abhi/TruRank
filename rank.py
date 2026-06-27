@@ -60,11 +60,21 @@ def run_ranking(cache_path: str, output_path: str):
     prof_norms = np.asarray(embeddings, dtype=np.float32)
     semantic_scores = prof_norms @ jd_norm
 
-    print("Computing behavioral signals and final composites...")
+    # TWO-STAGE RETRIEVAL: Only process the top 2000 candidates by semantic similarity
+    # This prevents running 12 complex signals on all 100,000 candidates
+    TOP_K = min(2000, len(profiles))
+    print(f"Filtering top {TOP_K} candidates by semantic similarity for full scoring...")
+    
+    # argpartition is faster than argsort for just getting top K
+    # Negate semantic_scores to sort descending
+    top_k_indices = np.argpartition(-semantic_scores, TOP_K - 1)[:TOP_K]
+    
+    print("Computing behavioral signals and final composites for shortlist...")
     computer = SignalComputer()
     scored_candidates = []
 
-    for i, profile in enumerate(profiles):
+    for i in top_k_indices:
+        profile = profiles[i]
         sim = float(semantic_scores[i])
         scores = computer.compute_all(profile, jd, sim)
         # Round to 4 decimal places so the sort order matches what validate_submission.py sees

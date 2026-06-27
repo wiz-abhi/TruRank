@@ -17,6 +17,10 @@ from src.utils import get_logger
 
 logger = get_logger(__name__)
 
+# Static reference date for deterministic honeypot detection
+# Use the date the dataset was snapshotted/released (e.g., June 22, 2026)
+REFERENCE_DATE = date(2026, 6, 22)
+
 
 @dataclass
 class HoneypotResult:
@@ -61,7 +65,7 @@ class HoneypotDetector:
         education = raw.get("education", [])
         signals = raw.get("redrob_signals", {})
         exp_years = profile.get("years_of_experience", 0) if isinstance(profile, dict) else 0
-        today = date.today()
+        today = REFERENCE_DATE
 
         # ── HARD FLAG 1: Expert proficiency with 0 months duration ──
         if isinstance(skills, list):
@@ -101,7 +105,7 @@ class HoneypotDetector:
                 start = _parse_date(role.get("start_date"))
                 dur_months = role.get("duration_months", 0)
                 if start and dur_months >= 12:
-                    today = date.today()
+                    today = REFERENCE_DATE
                     months_available = (today.year - start.year) * 12 + (today.month - start.month)
                     if dur_months > months_available + 3:
                         severity = 3 if dur_months > months_available + 12 else 2

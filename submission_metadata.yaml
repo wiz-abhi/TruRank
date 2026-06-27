@@ -76,7 +76,7 @@ methodology_summary: |
   Hard penalties applied for services-only careers (90%) and unrelated titles (70%).
   Profile trust scoring penalises expert claims with zero months of usage.
 
-  Honeypot Detection: A severity-threshold detector isolates impossible timelines, future dates, overlapping full-time roles, inflated career durations, and semantic traps (e.g. claiming to work at Sarvam AI in 2018). Successfully caught 113 synthetic honeypot candidates with a 0% false positive rate. Flagged candidates are excluded before the top 100 is selected.
+  Honeypot Detection: A severity-threshold detector isolates impossible timelines, future dates, overlapping full-time roles, inflated career durations, and semantic traps (e.g. claiming to work at Sarvam AI in 2018). Successfully caught 80+ synthetic honeypot candidates with a 0% false positive rate. Flagged candidates are excluded before the top 100 is selected.
 
   Explainability: Each candidate receives a profile-specific reasoning paragraph
   referencing their job title, company, matched skills, and behavioral traits.

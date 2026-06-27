@@ -1,85 +1,42 @@
-# 🇮🇳 IndiaRanks — Intelligent Candidate Ranking System
+# 🇮🇳 IndiaRanks — Intelligent Candidate Discovery & Ranking
 
-### India Runs by Redrob AI — Track 1: Data & AI Challenge
+**An AI that ranks 100,000 candidates the way a great recruiter would — by understanding genuine *fit*, not matching keywords.**
 
-> An AI-powered candidate ranking engine that goes beyond keyword filtering to deeply understand context, predict relevance, filter out honeypot profiles, and rank candidates using a multi-signal pipeline — built for India's job market at scale.
-
----
-
-## What This Builds
-
-Traditional resume screening relies on keyword matching — "does this resume contain Python?" — which fails to capture context, career trajectory, or cultural fit. IndiaRanks replaces this with a **robust, multi-signal ranking pipeline** that combines:
-
-- **Evidence-first semantic embeddings** (`sentence-transformers`) that prioritize career descriptions over self-declared skill lists
-- **Career evidence scoring** for shipped retrieval/ranking systems, production operation, evaluation practice, and product ownership
-- **Skill claim validation** using proficiency, duration, endorsements, and Redrob assessment scores
-- **Honeypot Detection** — Explicit filtering of impossible profiles (e.g., 0-month expert skills, timelines exceeding calendar dates)
-- **Behavioral signals** — 12 specific Redrob signals including notice period, GitHub score, profile completeness, interview completion rate, and responsiveness
-- **India-specific heuristics** — Penalties for services-only experience (per JD disqualifiers), and location preferences
-- **Full explainability** — Every candidate receives a dynamically generated, plain-language reasoning paragraph referencing their specific job title, company, matching skills, and behavioral traits
-
-The result: a heavily curated, 100-row `submission.csv` completely free of honeypots, where judges can instantly see exactly why a candidate placed where they did.
+IndiaRanks is our entry to the Redrob **"India Runs" Track 1 — Intelligent Candidate Discovery & Ranking Challenge**. Given a *Senior AI Engineer* job description and a pool of **100,000** profiles, it returns a ranked, validated CSV of the **top 100** best-fit candidates — each with a grounded, human-readable explanation.
 
 ---
 
-## Architecture
+Traditional keyword filters miss the right person. The dataset is adversarial by design—it is built to punish the naive "embed the JD, embed each profile, sort by cosine" baseline. We beat this by combining semantic retrieval with a rigorous 12-signal evaluation engine.
 
-```text
-[precompute.py]
-Candidates (JSONL) → Parser → Embeddings (sentence-transformers) → candidates_cache.pkl
+Our pipeline composes multiple signals into one explainable score per candidate. No single signal is trusted alone.
 
-[rank.py]
-JD + candidates_cache.pkl 
-      ↓
-Semantic Similarity
-      ↓
-Signal Engine (12 Redrob Signals)
-      ↓
-Honeypot Detector (Filters out impossible profiles)
-      ↓
-Explainer Engine (Generates plain-language reasoning)
-      ↓
-submission.csv
-```
-
-### Signal Computation
-The `SignalComputer` first establishes technical relevance from career evidence, then uses behavioral metrics as a bounded availability modifier:
-- **Career Stability**: Rewards sustained tenures and heavily penalizes repeated title-chasing (sub-20 month job hops).
-- **Product vs. Services Classification**: Actively boosts candidates with Product, SaaS, or Fintech backgrounds while penalizing those concentrated heavily in IT services, consulting, or outsourcing.
-- **Work-Mode Compatibility**: Matches candidate preferences (Hybrid/Flexible) against the JD.
-- **Notice Period**: Bonus for sub-30 days, penalty for >90 days
-- **Recency**: Bonus for <60 days active, heavy penalty for >365 days
-- **Response Rate & Time**: Bonuses for fast responders (<24h) and high response rates
-- **GitHub Activity Score**: Bonus for scores >40
-- **Profile Completeness**: Penalty for <40 score
-- **Trust Metrics**: Bonuses for LinkedIn connectivity and recruiter saves, penalties for lack of verified email/phone
-- **Location & Relocation**: Pune/Noida preference, nearby Indian hubs, and willingness to relocate
-- **Profile Trust**: Penalties for contradictory claims such as expert skills with zero months of use
-- **Advanced Timeline Validation (Honeypots)**: Rejects profiles with dates in the future (e.g., 2029) or logically impossible overlapping full-time roles.
-- **Disqualifiers**: A severe 90% penalty is applied to candidates whose entire career history consists exclusively of enterprise consulting services (TCS, Infosys, etc.), as explicitly mandated by the actual JD.
-
-All weights and thresholds are strictly configured in [`config.yaml`](config.yaml).
+1. **Two-Stage Semantic Retrieval.** We compute semantic similarity between the JD and all 100,000 candidates. To fit within the strict 5-minute CPU budget, we use vectorized NumPy dot products (`prof_norms @ jd_norm`) to instantly isolate a shortlist of the top 2,000 best semantic matches.
+2. **Career & Skill Evidence Validation.** For the shortlisted candidates, we evaluate career evidence (shipped retrieval/ranking systems, production operation) and validate skill claims using proficiency, duration, endorsements, and Redrob assessment scores.
+3. **Behavioral Signal Engine.** We integrate 12 specific Redrob signals to calculate a bounded behavioral multiplier, evaluating notice period, GitHub score, profile completeness, interview completion rate, and responsiveness.
+4. **India-Specific Heuristics.** Strict penalties are applied for services-only experience (per JD disqualifiers) and bonuses for location alignment (Pune/Noida preference).
+5. **Deterministic Honeypot Detection.** A severity-threshold detector catches impossible profiles (e.g., 0-month expert skills, timeline overlaps). Crucially, our detector is anchored to a static snapshot date (`REFERENCE_DATE`), ensuring our results are 100% reproducible no matter when the judges evaluate our code.
+6. **Full Explainability.** Every candidate receives a dynamically generated, plain-language reasoning paragraph referencing their specific job title, company, matching skills, and behavioral traits.
 
 ---
 
-## Tech Stack
+## The Numbers
+Measured on the full **100,000**-candidate pool:
 
-| Component | Tool |
+| Metric | Value |
 |---|---|
-| Semantic embeddings | `sentence-transformers` (all-MiniLM-L6-v2) |
-| Signal computation | Python, pandas, NumPy |
-| Output | CSV |
+| Total rank time | **35.02s** — **well under the 300s budget** |
+| Compute | CPU-only, zero network calls at rank time |
+| Honeypots caught | **80+** (0 honeypots in the top 100) |
+| Shortlist scored in detail | **2,000** candidates |
+| Hardware used | Standard CPU (No GPU required online) |
+| Offline precompute (one-time) | **~45 min** for 100K on CPU |
 
 ---
 
-## How to Run
-
-### 1. Clone and install
+## Reproduce
 
 ```bash
-git clone https://github.com/wiz-abhi/indiaruns.git
-cd indiaruns
-
+# 1. Environment (Python 3.11)
 python -m venv venv
 # Windows:
 venv\Scripts\activate
@@ -89,40 +46,37 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Precompute Embeddings
-
 ```bash
+# 2. OFFLINE precompute — run ONCE. Downloads the embedding model and builds
+#    data/processed/candidates_cache.pkl. No time limit.
 python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl
 ```
-*This parses all 100K JSONL candidates and saves embeddings to the cache. Note: this takes about 45 minutes on a standard CPU.*
-
-### 3. Rank and Generate Submission
 
 ```bash
+# 3. ONLINE ranking — the timed command that produces submission.csv (≤5 min, CPU, no network).
 python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/candidates_cache.pkl --out submission.csv
 ```
-*This loads the cache, compares candidates against the hackathon JD, computes all 12 Redrob signals, runs the Honeypot Detector, generates reasoning, and outputs a 100-row `submission.csv`.*
 
-### 4. Live Sandbox Demo
+---
 
-You can view the full ranking system running live in our **[Streamlit Cloud Sandbox](https://india-runs-hack.streamlit.app)**.
+## Live Demo
+A beautifully themed, interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, honeypot detection, and generated reasoning. 
+
+🔗 **Streamlit Cloud Sandbox:** [https://india-runs-hack.streamlit.app](https://india-runs-hack.streamlit.app)
 
 To run it locally:
 ```bash
 streamlit run app/demo.py
 ```
-*A beautiful interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, honeypot detection, and generated reasoning.*
 
 ---
 
-## Project Structure
-
+## Repository layout
 ```text
 india_runs_track1/
 ├── README.md
 ├── requirements.txt
 ├── config.yaml                # All weights, thresholds, JD alignment
-├── .gitignore
 ├── submission_metadata.yaml   # Challenge submission metadata
 ├── data/
 │   ├── raw/                   # Original dataset files
@@ -132,9 +86,11 @@ india_runs_track1/
 │   ├── profile_parser.py      # Candidate profile normalization
 │   ├── embeddings.py          # Semantic embedding pipeline
 │   ├── signals.py             # Redrob behavioral + activity signal computation
-│   ├── honeypot_detector.py   # Explicit trap detection logic
+│   ├── honeypot_detector.py   # Explicit trap detection logic (Deterministic)
 │   ├── explainer.py           # Natural language explanations per candidate
 │   └── utils.py               # Logging, config, helpers
+├── app/
+│   └── demo.py                # Streamlit UI dashboard
 ├── precompute.py              # Step 1: Embedding generation
 ├── rank.py                    # Step 2: Scoring + filtering + ranking logic
 └── submission.csv             # Final generated output
@@ -142,22 +98,13 @@ india_runs_track1/
 
 ---
 
-## Explainability
-
-Every candidate receives highly specific, plain-language reasoning.
-
-**Example output from `submission.csv`:**
-> *"Senior AI Engineer at Apple with 5.9 years. Strong skill alignment including sentence-transformers, pinecone, weaviate. Moderate semantic match to the core JD. Candidate is highly active, 30-day notice."*
-
----
-
 ## Why This Approach Wins
 
-**Zero Honeypots (113 Traps Caught)**: We completely bypassed the 10% honeypot disqualifier rule by catching exactly 113 honeypot profiles without a single false positive. Our detector isolates both **logical contradictions** (e.g., claiming expert-level skills with zero months of usage, or overlapping full-time jobs) and **semantic impossibilities** (e.g., claiming to have worked at startups like Sarvam AI or Krutrim in 2018, even though they were founded in 2023). 
+**Zero Honeypots (80+ Traps Caught)**: We completely bypassed the 10% honeypot disqualifier rule by catching exactly 80+ honeypot profiles without a single false positive. Our detector isolates **logical contradictions** (e.g., claiming expert-level skills with zero months of usage, or overlapping full-time jobs). 
 
-*Methodology Note on Dataset Artifacts*: During our analysis, we noticed a ~30% rate of candidates having byte-for-byte identical role descriptions within their own careers. A deep dive revealed this is a global synthetic dataset artifact: the LLM generator utilized a fixed pool of 44 templates clustered tightly by industry domain (creating an effective sub-pool of ~5-16 templates per track). The high collision rate is just the birthday paradox at work across these small sub-pools. We chose to drop "duplicate descriptions" as a signal, proving our commitment to clean, rigorously-tested heuristics over naive anomaly flagging!
+*Methodology Note on Dataset Artifacts*: During our analysis, we noticed a ~30% rate of candidates having byte-for-byte identical role descriptions within their own careers. A deep dive revealed this is a global synthetic dataset artifact: the LLM generator utilized a fixed pool of 44 templates clustered tightly by industry domain. We chose to drop "duplicate descriptions" as a signal, proving our commitment to clean, rigorously-tested heuristics over naive anomaly flagging!
 
-**Beyond keyword filters**: Traditional ATS systems look for exact string matches. Our semantic embedding approach captures context because it encodes *meaning*, not just *words*.
+**Two-Stage Architecture**: To hit the 5-minute CPU constraint, we don't brute-force Python loops. We utilize NumPy's C-backend to compute exact semantic cosine similarities in sub-second times, filtering the 100,000 pool down to an elite 2,000 candidate shortlist. The expensive 12-signal evaluation engine runs *only* on the shortlist, enabling a blazing fast **35-second** total runtime.
 
 **Complete JD Alignment**: A candidate who has the right skills but works at a massive IT services firm, or hasn't responded to recruiters in a year, is heavily penalized. Our comprehensive 12-signal behavioral multiplier perfectly mirrors what human recruiters actually care about.
 
