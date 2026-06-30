@@ -134,22 +134,35 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
     bm25 = BM25Okapi(corpus)
     bm25_scores_raw = np.array(bm25.get_scores(BM25_QUERY_TERMS), dtype=np.float32)
 
-    # ── Reciprocal Rank Fusion ─────────────────────────────────────────────────
+    # ── Reciprocal Rank Fusion (8 independent rankings) ──────────────────────
     # RRF is scale-free: only rank positions matter, avoiding normalization hacks.
     # score(id) = Σ 1/(k + rank_R(id)) over each ranking R
+    #
+    # KEY IMPROVEMENT: Instead of RRF-ing just 2 rankings (aggregate_semantic, BM25),
+    # we RRF ALL 8 rankings independently:
+    #   6 per-aspect semantic rankings + 1 BM25 + 1 aggregate semantic
+    # This gives RRF 8 independent views — a candidate strong in one aspect
+    # (e.g., NLP/IR but not embeddings) still surfaces even if their aggregate
+    # semantic score is mediocre.
     SHORTLIST_SIZE = 800
     RRF_K = 60
 
-    print(f"Fusing semantic + BM25 with RRF (k={RRF_K}), shortlist={SHORTLIST_SIZE}...")
+    print(f"Fusing {len(aspect_scores) + 2} rankings with RRF (k={RRF_K}), shortlist={SHORTLIST_SIZE}...")
     n = len(profiles)
     rrf_scores = np.zeros(n, dtype=np.float64)
 
-    # Semantic ranking contribution
+    # Per-aspect semantic rankings (6 independent views)
+    for name, a_scores in aspect_scores.items():
+        order = np.argsort(-a_scores)
+        for rank, idx in enumerate(order):
+            rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)
+
+    # Aggregate semantic ranking (weighted combination)
     sem_order = np.argsort(-semantic_scores)
     for rank, idx in enumerate(sem_order):
         rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)
 
-    # BM25 ranking contribution
+    # BM25 lexical ranking
     bm25_order = np.argsort(-bm25_scores_raw)
     for rank, idx in enumerate(bm25_order):
         rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)

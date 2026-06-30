@@ -66,26 +66,28 @@ Instead of one coarse JD embedding, we decompose the JD into **6 independent asp
 | `product_company` | SaaS, startup, product ownership |
 | `location_availability` | India, Pune, Noida, Bangalore, notice period |
 
-Each aspect retrieves independently via semantic similarity. The 6 semantic rankings + 1 BM25 ranking are fused with **Reciprocal Rank Fusion (RRF, k=60)** — a scale-free method that uses only rank positions, avoiding fragile normalization. This produces an **800-candidate shortlist**.
+Each aspect retrieves independently via semantic similarity. The 6 semantic rankings + 1 BM25 ranking + 1 aggregate semantic ranking are fused with **Reciprocal Rank Fusion (RRF, k=60)** across **8 independent rankings**. This scale-free method uses only rank positions, avoiding fragile normalization and surfacing hidden gems strong in specific aspects. This produces an **800-candidate shortlist**.
 
-### Stage 2 — Cross-Encoder + 13-Signal Scoring
+### Stage 2 — Cross-Encoder + 15-Signal Scoring
 
-The shortlist is scored with **13 structured signals** including a new **skill corroboration** check (skills only earn credit if career descriptions mention them). The top 200 candidates are then **reranked by a cross-encoder** (`cross-encoder/ms-marco-MiniLM-L-6-v2`) that reads each `(JD, candidate)` pair jointly with cross-attention — catching keyword stuffers that bi-encoder cosine similarity cannot.
+The shortlist is scored with **15 structured signals** (now including external validation and production recency). The top 200 candidates are then **reranked by a cross-encoder** (`cross-encoder/ms-marco-MiniLM-L-6-v2`) that reads each `(JD, candidate)` pair jointly with cross-attention — catching keyword stuffers that bi-encoder cosine similarity cannot.
 
-**Signal breakdown (13 drivers, sweep-optimized on 200-candidate silver labels — NDCG@10 +7.5%):**
-- `career_evidence` (0.247) — dominant signal, role substance from career text
-- `semantic_similarity` (0.144) — weighted aspect-based semantic match
-- `skill_corroboration` (0.085) — ⭐ skills backed by career descriptions
-- `product_company_fit` (0.084) — product vs services background
-- `experience_fit` (0.082) — 5-9 year band fit
-- `location_fit` (0.081) — Pune/Noida/metro preference
-- `domain_alignment` (0.067) — NLP/IR vs CV/speech domain fit
-- `work_mode_fit` (0.045) — hybrid/onsite/remote preference
-- `skill_recency` (0.037) — freshness of relevant skills
-- `skill_match` (0.036) — JD-required skill coverage
-- `skill_evidence` (0.035) — duration, proficiency, endorsements, assessments
-- `career_stability` (0.029) — sustained delivery vs title chasing
-- `culture_fit` (0.027) — culture signal alignment
+**Signal breakdown (15 drivers, sweep-optimized on 200-candidate silver labels — NDCG@10 +8.3%):**
+- `career_evidence` (0.200) — dominant signal, role substance from career text
+- `location_fit` (0.100) — Pune/Noida/metro preference
+- `semantic_similarity` (0.095) — weighted aspect-based semantic match
+- `product_company_fit` (0.090) — product vs services background
+- `skill_evidence` (0.082) — duration, proficiency, endorsements, assessments
+- `experience_fit` (0.075) — 5-9 year band fit
+- `domain_alignment` (0.070) — NLP/IR vs CV/speech domain fit
+- `production_recency` (0.060) — ⭐ months since last shipping role
+- `work_mode_fit` (0.050) — hybrid/onsite/remote preference
+- `skill_recency` (0.046) — freshness of relevant skills
+- `career_stability` (0.039) — sustained delivery vs title chasing
+- `skill_corroboration` (0.032) — skills backed by career descriptions
+- `external_validation` (0.029) — ⭐ GitHub, OSS, StackOverflow
+- `culture_fit` (0.019) — culture signal alignment
+- `skill_match` (0.014) — JD-required skill coverage
 
 ### Stage 3 — Honeypot Floor + Deterministic Output
 
@@ -99,14 +101,14 @@ Measured on the full **100,000**-candidate pool:
 
 | Metric | Value |
 |---|---|
-| Total rank time | **~19s** (well under the 300s budget) |
+| Total rank time | **~21s** (well under the 300s budget) |
 | Compute | CPU-only, zero network calls at rank time |
 | Honeypots caught | **80+** (0 in the top 100) |
 | Shortlist (RRF-fused) | **800** candidates |
 | Cross-encoder rerank | **200** pairs (the head, where NDCG lives) |
 | CE score range | **0.087 – 0.993** (excellent discrimination) |
 | Behavioral multiplier range | **0.50× – 1.15×** (23 Redrob signals) |
-| Silver-label NDCG@10 | **0.945** (sweep-optimized, +7.5% vs hand-tuned) |
+| Silver-label NDCG@10 | **0.952** (sweep-optimized, +8.3% vs hand-tuned) |
 | Test suite | **67 tests passing** |
 | Offline precompute | **~45 min** for 100K on CPU (one-time) |
 

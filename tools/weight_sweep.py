@@ -223,7 +223,7 @@ SIGNAL_NAMES = [
     "semantic_similarity", "skill_match", "skill_evidence", "skill_corroboration",
     "career_evidence", "experience_fit", "domain_alignment", "culture_fit",
     "location_fit", "skill_recency", "career_stability", "product_company_fit",
-    "work_mode_fit",
+    "work_mode_fit", "external_validation", "production_recency",
 ]
 
 

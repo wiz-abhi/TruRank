@@ -84,6 +84,8 @@ class SignalScores:
     composite_score: float = 0.0
     cross_encoder_score: float = -1.0   # -1 means CE was not run
     skill_corroboration: float = 0.0    # fraction of claimed skills corroborated by career text
+    external_validation: float = 0.0
+    production_recency: float = 0.0
 
     def to_dict(self) -> Dict[str, float]:
         """Return all scores as a dictionary."""
@@ -102,6 +104,8 @@ class SignalScores:
             "product_company_fit": round(self.product_company_fit, 4),
             "work_mode_fit": round(self.work_mode_fit, 4),
             "education_tier_bonus": round(self.education_tier_bonus, 4),
+            "external_validation": round(self.external_validation, 4),
+            "production_recency": round(self.production_recency, 4),
             "base_score": round(self.base_score, 4),
             "behavioral_multiplier": round(self.behavioral_multiplier, 4),
             "composite_score": round(self.composite_score, 4),
@@ -149,24 +153,28 @@ class SignalComputer:
         scores.work_mode_fit = self.work_mode_fit_score(profile)
         scores.education_tier_bonus = self.education_tier_bonus(profile.education_tier)
         scores.skill_corroboration = self.skill_corroboration_score(profile, jd)
+        scores.external_validation = self.external_validation_score(profile)
+        scores.production_recency = self.production_recency_score(profile)
 
         w = self._weights
         # Weights optimized by silver-label sweep (tools/weight_sweep.py)
-        # Baseline NDCG@10: 0.879 → Optimized: 0.945 (+7.5%)
+        # Baseline NDCG@10: 0.879 → Optimized: 0.952 (+8.3%)
         base = (
-            w.get("semantic_similarity", 0.1435) * scores.semantic_similarity
-            + w.get("skill_match", 0.0360) * scores.skill_match
-            + w.get("skill_evidence", 0.0354) * scores.skill_evidence
-            + w.get("skill_corroboration", 0.0849) * scores.skill_corroboration
-            + w.get("career_evidence", 0.2474) * scores.career_evidence
-            + w.get("experience_fit", 0.0824) * scores.experience_fit
-            + w.get("domain_alignment", 0.0672) * scores.domain_alignment
-            + w.get("culture_fit", 0.0265) * scores.culture_fit
-            + w.get("location_fit", 0.0813) * scores.location_fit
-            + w.get("skill_recency", 0.0372) * scores.skill_recency
-            + w.get("career_stability", 0.0291) * scores.career_stability
-            + w.get("product_company_fit", 0.0844) * scores.product_company_fit
-            + w.get("work_mode_fit", 0.0449) * scores.work_mode_fit
+            w.get("semantic_similarity", 0.0951) * scores.semantic_similarity
+            + w.get("skill_match", 0.0140) * scores.skill_match
+            + w.get("skill_evidence", 0.0815) * scores.skill_evidence
+            + w.get("skill_corroboration", 0.0318) * scores.skill_corroboration
+            + w.get("career_evidence", 0.1998) * scores.career_evidence
+            + w.get("experience_fit", 0.0751) * scores.experience_fit
+            + w.get("domain_alignment", 0.0702) * scores.domain_alignment
+            + w.get("culture_fit", 0.0187) * scores.culture_fit
+            + w.get("location_fit", 0.1000) * scores.location_fit
+            + w.get("skill_recency", 0.0458) * scores.skill_recency
+            + w.get("career_stability", 0.0388) * scores.career_stability
+            + w.get("product_company_fit", 0.0900) * scores.product_company_fit
+            + w.get("work_mode_fit", 0.0501) * scores.work_mode_fit
+            + w.get("external_validation", 0.0287) * scores.external_validation
+            + w.get("production_recency", 0.0604) * scores.production_recency
         )
         scores.base_score = clamp(base, 0.0, 1.0)
 
@@ -551,24 +559,40 @@ class SignalComputer:
         return 1.0
 
     def title_relevance_penalty(self, profile: CandidateProfile) -> float:
-        """Penalize if the candidate has an explicitly unrelated title."""
+        """Penalize if the candidate has an explicitly unrelated title, using comprehensive regexes."""
         if not profile.job_titles:
             return 1.0
 
         current = profile.job_titles[0].lower()
-        unrelated = [
-            "marketing",
-            "sales",
-            "hr",
-            "human resources",
-            "accountant",
-            "graphic",
-            "civil",
-            "mechanical",
-        ]
-        for u in unrelated:
-            if u in current:
-                return 0.3  # Heavy penalty for completely unrelated title (e.g. Marketing Manager)
+        
+        import re
+        NONTECH_TITLE_RE = re.compile(
+            r"\b(hr\b|human resource|recruit|talent acquisition|sales\b|marketing|content|"
+            r"writer|graphic|design|account|finance|financial|mechanical|civil\b|"
+            r"operations|teacher|nurse|doctor|lawyer|business analyst|customer\b|"
+            r"support\b|administrat|product manager|project manager|consultant|executive\b)",
+            re.I,
+        )
+        ADJACENT_TITLE_RE = re.compile(
+            r"\b(data engineer|senior data engineer|analytics engineer|backend engineer|"
+            r"software engineer|full[- ]?stack|sde\b|platform engineer|developer|programmer)\b",
+            re.I,
+        )
+        STRONG_TITLE_RE = re.compile(
+            r"\b(ml engineer|machine learning engineer|ai engineer|applied (ml |ai )?scientist|"
+            r"ai research(er| engineer)?|research engineer|data scientist|ml scientist|"
+            r"nlp engineer|ml ?ops engineer|deep learning|staff ml|senior ml|senior ai|"
+            r"ai specialist|search engineer|relevance engineer|recommendation engineer)\b",
+            re.I,
+        )
+        
+        if NONTECH_TITLE_RE.search(current):
+            return 0.1  # Heavy penalty for completely unrelated title
+        elif STRONG_TITLE_RE.search(current):
+            return 1.1  # Slight boost for perfectly aligned title
+        elif ADJACENT_TITLE_RE.search(current):
+            return 1.0
+            
         return 1.0
 
     # ── Original Signals ─────────────────────────────────────────────
@@ -668,3 +692,43 @@ class SignalComputer:
 
     def education_tier_bonus(self, tier: str) -> float:
         return self._edu_tiers.get(tier, {}).get("bonus", 0.0)
+
+    def external_validation_score(self, profile: CandidateProfile) -> float:
+        """
+        Score based on GitHub activity, OSS contribution, or StackOverflow rep.
+        Mirrors Caliber's external_validation feature.
+        """
+        score = 0.0
+        github_score = profile.redrob_signals.get("github_activity_score", 0)
+        if github_score > 70:
+            score += 1.0
+        elif github_score > 40:
+            score += 0.5
+        
+        if profile.redrob_signals.get("open_source_contributor", False):
+            score += 0.5
+            
+        if profile.redrob_signals.get("stackoverflow_reputation", 0) > 1000:
+            score += 0.5
+            
+        return clamp(score, 0.0, 1.0)
+
+    def production_recency_score(self, profile: CandidateProfile) -> float:
+        """
+        Score based on evidence of shipping/production in recent roles.
+        Mirrors Caliber's production_recency feature.
+        """
+        score = 0.0
+        prod_terms = ["production", "deployed", "shipped", "live system", "serving", "mlops", "inference"]
+        
+        # Check recent roles (first 2)
+        recent_desc = " ".join(profile.career_history_desc[:2]).lower()
+        if any(term in recent_desc for term in prod_terms):
+            score += 1.0
+        else:
+            # Check older roles
+            older_desc = " ".join(profile.career_history_desc[2:]).lower()
+            if any(term in older_desc for term in prod_terms):
+                score += 0.5
+                
+        return score
