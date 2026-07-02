@@ -24,7 +24,11 @@ team_members:
 github_repo: "https://github.com/wiz-abhi/TruRank"
 sandbox_link: "https://trurank-indiaruns.streamlit.app/"
 
-reproduce_command: "python rank.py"
+# Precompute (offline, one-time) builds the cache + downloads models; then the
+# timed ranking step produces the CSV. A Dockerfile chains both in one command.
+reproduce_command: >-
+  python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl
+  && python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/candidates_cache.pkl --out submission.csv
 
 # ============================================================================
 # Compute environment
@@ -62,20 +66,26 @@ methodology_summary: |
   embedding text (career descriptions before self-declared skills), and encode via
   sentence-transformers (all-MiniLM-L6-v2). Cache to disk as candidates_cache.pkl.
 
-  Step 2 — Rank (timed): Load cache, compute cosine similarity against a rich JD
-  embedding alongside a BM25 lexical retrieval pass over career descriptions. The
-  combined shortlist of candidates is then scored across 12 weighted signals:
+  Step 2 — Rank (timed): Load cache. Retrieve with 8-way Reciprocal Rank Fusion —
+  6 aspect-based semantic queries + a weighted-aggregate semantic ranking + a BM25
+  lexical pass over career descriptions — to an 800-candidate shortlist. Score each
+  across 15 weighted signals (sweep-optimised on silver labels):
     - Career evidence (retrieval/ranking/production keywords in role history)
     - Skill evidence (validated by duration, proficiency, endorsements, assessments)
+    - Skill corroboration (skills only earn credit if career text backs them)
     - Semantic similarity, skill-name match, experience fit, domain alignment
     - Career stability (penalises sub-20-month title-chasing hops)
     - Product-vs-services fit (boosts SaaS/product, penalises services-only)
     - Location fit (Pune/Noida preference, relocation awareness)
-    - Work-mode compatibility, culture fit
-  A bounded (0.65–1.0) behavioral multiplier uses 12 Redrob signals (notice period,
-  GitHub score, response rate, profile completeness, interview completion, etc.).
-  Hard penalties applied for services-only careers (90%) and unrelated titles (70%).
-  Profile trust scoring penalises expert claims with zero months of usage.
+    - Work-mode compatibility, culture fit, skill recency
+    - External validation (GitHub, endorsements, recruiter demand)
+    - Production recency (months since last shipping role)
+  The top 200 are reranked by a cross-encoder (ms-marco-MiniLM-L-6-v2) reading each
+  (JD, candidate) pair jointly. A bounded (0.50–1.15) behavioral multiplier uses 20
+  Redrob signals (notice period, GitHub score, response rate, profile completeness,
+  interview completion, offer-acceptance, search visibility, etc.). Hard penalties
+  apply for services-only careers (90%) and unrelated titles (90%). Profile-trust
+  scoring penalises expert skill claims with zero months of usage.
 
   Honeypot Detection: A severity-threshold detector isolates impossible timelines, future dates, overlapping full-time roles, inflated career durations, and semantic traps (e.g. claiming to work at Sarvam AI in 2018). Successfully caught 80+ synthetic honeypot candidates with a 0% false positive rate. Flagged candidates are excluded before the top 100 is selected.
 

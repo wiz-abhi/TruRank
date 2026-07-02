@@ -1,0 +1,13 @@
+# Minimal pinned deps for the sealed ranking container (no demo UI).
+# torch is installed from the CPU wheel index in the Dockerfile.
+numpy==2.4.6
+pandas==3.0.3
+torch==2.12.1
+transformers==5.12.1
+sentence-transformers==5.6.0
+tokenizers==0.22.2
+safetensors==0.8.0
+scikit-learn==1.9.0
+pyyaml==6.0.3
+tqdm==4.68.3
+rank_bm25==0.2.2

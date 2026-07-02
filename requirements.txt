@@ -1,22 +1,25 @@
-# Core
-pandas>=2.0.0,<3.0.0
-numpy>=1.24.0,<2.0.0
+# Pinned to the exact versions the submission was produced and tested on
+# (Python 3.11, CPU-only). See Dockerfile for the CPU torch wheel index.
 
-# NLP & Embeddings
-sentence-transformers>=2.2.2,<3.0.0
-torch>=2.0.0,<3.0.0
-transformers>=4.35.0,<5.0.0
-torchvision>=0.15.0,<1.0.0
+# Core numerics
+numpy==2.4.6
+pandas==3.0.3
 
-# Data handling
-pyyaml>=6.0,<7.0
+# NLP & embeddings (CPU)
+torch==2.12.1
+transformers==5.12.1
+sentence-transformers==5.6.0
+tokenizers==0.22.2
+safetensors==0.8.0
+scikit-learn==1.9.0
 
-# Demo UI
-streamlit>=1.30.0,<2.0.0
-plotly>=5.18.0,<6.0.0
-
-# Utilities
-tqdm>=4.66.0,<5.0.0
+# Config & data handling
+pyyaml==6.0.3
+tqdm==4.68.3
 
 # Lexical retrieval
-rank_bm25>=0.2.2,<0.3.0
+rank_bm25==0.2.2
+
+# Demo UI (only needed for the Streamlit sandbox, not for ranking)
+streamlit==1.58.0
+plotly==6.8.0

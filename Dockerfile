@@ -25,9 +25,13 @@ ENV PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1 \
     TOKENIZERS_PARALLELISM=false
 
-# Dependencies first for layer caching.
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Dependencies first for layer caching. Install the CPU-only torch wheel
+# explicitly — the default PyPI torch on Linux is the multi-GB CUDA build,
+# which wastes build time and disk for a CPU-only ranking step.
+COPY requirements-rank.txt .
+RUN pip install --no-cache-dir torch==2.12.1 \
+        --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements-rank.txt
 
 # Project source.
 COPY src/ src/
@@ -37,5 +41,6 @@ COPY config.yaml precompute.py rank.py ./
 # then rank (network hard-locked OFF inside rank.py). candidates.jsonl is mounted
 # at run time under data/raw/.
 CMD ["sh", "-c", \
-     "python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl && \
+     "mkdir -p out && \
+      python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl && \
       python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/candidates_cache.pkl --out out/submission.csv"]

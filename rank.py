@@ -147,8 +147,11 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
     SHORTLIST_SIZE = 800
     RRF_K = 60
 
-    print(f"Fusing {len(aspect_scores) + 2} rankings with RRF (k={RRF_K}), shortlist={SHORTLIST_SIZE}...")
     n = len(profiles)
+    # Clamp the shortlist to the pool size so small inputs (e.g. the ≤100-candidate
+    # sandbox check in submission_spec §10.5) don't blow argpartition's kth bound.
+    shortlist_size = min(SHORTLIST_SIZE, n)
+    print(f"Fusing {len(aspect_scores) + 2} rankings with RRF (k={RRF_K}), shortlist={shortlist_size}...")
     rrf_scores = np.zeros(n, dtype=np.float64)
 
     # Per-aspect semantic rankings (6 independent views)
@@ -167,7 +170,7 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
     for rank, idx in enumerate(bm25_order):
         rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)
 
-    top_k_indices = np.argpartition(-rrf_scores, SHORTLIST_SIZE - 1)[:SHORTLIST_SIZE]
+    top_k_indices = np.argpartition(-rrf_scores, shortlist_size - 1)[:shortlist_size]
     print(f"RRF shortlist size: {len(top_k_indices)} candidates")
 
     # ── Full 12-signal scoring on the shortlist ─────────────────────────────────
